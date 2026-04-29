@@ -41,9 +41,6 @@ else:
     # --- LÓGICA DE VISUALIZACIÓN ---
     
     if opcion == "HOME":
-        # --- DISEÑO PANTALLA PRINCIPAL ---
-        st.title("📊 Resumen de Búsqueda")
-        st.markdown("### Bienvenido al tablero de control de propiedades")
         
         # Imagen de portada si existe
         ruta_home = "images/HOME.png"
