@@ -66,7 +66,7 @@ if diccionario_hojas:
         st.subheader("Galería")
         # Intentamos cargar la imagen desde la carpeta /fotos
         # El nombre del archivo debe ser igual al nombre de la pestaña + .jpg
-        ruta_foto = f"images/{opcion}.jpg"
+        ruta_foto = f"images/{opcion}.png"
         
         if os.path.exists(ruta_foto):
             st.image(ruta_foto, caption=f"Propiedad: {opcion}", use_container_width=True)
