@@ -1,46 +1,83 @@
 import streamlit as st
 import pandas as pd
+import os
 
-st.set_page_config(page_title="Property Navigator", layout="wide")
+# Configuración de la página
+st.set_page_config(page_title="Navegador de Propiedades", layout="wide", page_icon="🏠")
 
-# Function to extract links if they are saved as strings
-def make_clickable(link):
-    if pd.isna(link) or str(link).strip() == "":
-        return "No link available"
-    return f'<a href="{link}" target="_blank">Open Real Estate Listing 🔗</a>'
+# Estilo personalizado para mejorar la visualización
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f5f5f5;
+    }
+    .stTable {
+        background-color: white;
+        border-radius: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
+# Función para cargar los datos del nuevo archivo
 @st.cache_data
-def load_data():
-    # Load all sheets
-    return pd.read_excel("Opciones_Deptos_LM.xlsx", sheet_name=None)
+def cargar_datos():
+    archivo = "Opciones_Deptos_LM.xlsx"
+    try:
+        # Cargamos todas las pestañas
+        return pd.read_excel(archivo, sheet_name=None)
+    except Exception as e:
+        st.error(f"No se pudo encontrar el archivo {archivo}. Revisa el nombre en GitHub.")
+        return None
 
-all_sheets = load_data()
+diccionario_hojas = cargar_datos()
 
-# SIDEBAR
-st.sidebar.title("🏙️ Navigation")
-selection = st.sidebar.selectbox("Select Property:", list(all_sheets.keys()))
-
-st.title(f"Property Details: {selection}")
-
-df = all_sheets[selection]
-
-# DISPLAY LOGIC
-if selection != "HOME":
-    # 1. Show the Data Table
-    st.table(df) # Using table for a cleaner 'Property Sheet' look
+if diccionario_hojas:
+    # --- NAVEGACIÓN (SIDEBAR) ---
+    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=100)
+    st.sidebar.title("Índice de Propiedades")
     
-    # 2. Handle the Embedded Link
-    # If your 'VER AVISO' cell has a URL, we display it as a big button
-    if "VER AVISO" in df.values:
-        # This logic finds the URL next to the 'VER AVISO' text
-        st.info("Check the original listing below:")
-        # (Assuming the link is in the cell next to 'VER AVISO')
-        st.markdown("[Click here to view full listing](https://www.zonaprop.com.ar/)", unsafe_allow_html=True)
+    # Lista de pestañas disponibles
+    nombres_hojas = list(diccionario_hojas.keys())
+    opcion = st.sidebar.radio("Selecciona una opción:", nombres_hojas)
 
-    # 3. Handle Images (Placeholder logic)
-    # If you upload an image named 'tagle.jpg' to GitHub:
-    # st.image(f"images/{selection.lower().replace(' ', '_')}.jpg")
+    # --- CUERPO PRINCIPAL ---
+    st.title(f"📍 {opcion}")
+    
+    df = diccionario_hojas[opcion]
+
+    # Limpiamos filas/columnas vacías que suele generar Excel
+    df = df.dropna(how='all').dropna(axis=1, how='all')
+
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        st.subheader("Información Detallada")
+        # Mostramos la tabla (usamos table para que se vea fija y profesional)
+        st.table(df)
+
+        # Lógica para detectar Links (Zonaprop, etc)
+        # Buscamos en el dataframe cualquier celda que contenga 'http'
+        for r_idx, row in df.iterrows():
+            for val in row:
+                if isinstance(val, str) and "http" in val:
+                    st.link_button(f"🔗 Ver publicación original", val, type="primary")
+
+    with col2:
+        st.subheader("Galería")
+        # Intentamos cargar la imagen desde la carpeta /fotos
+        # El nombre del archivo debe ser igual al nombre de la pestaña + .jpg
+        ruta_foto = f"fotos/{opcion}.jpg"
+        
+        if os.path.exists(ruta_foto):
+            st.image(ruta_foto, caption=f"Propiedad: {opcion}", use_container_width=True)
+        else:
+            # Mensaje de ayuda si no encuentra la foto
+            st.info(f"Para ver la imagen, sube un archivo llamado '{opcion}.jpg' a la carpeta 'fotos' en GitHub.")
+            
+    # Botón de retorno al Home si no estás en el Home
+    if opcion != "HOME":
+        if st.button("⬅️ Volver al listado principal"):
+            st.info("Usa el menú de la izquierda para navegar.")
 
 else:
-    st.write("Welcome! Select a property from the sidebar to see photos and links.")
-    st.dataframe(df)
+    st.warning("Esperando carga de datos...")
