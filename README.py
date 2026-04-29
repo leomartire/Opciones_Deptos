@@ -49,14 +49,14 @@ if sheets:
 
     with col2:
         # LÓGICA DE IMÁGENES: 
-        # Busca en la carpeta 'fotos' un archivo que se llame igual a la pestaña + .jpg
-        image_path = f"fotos/{selection}.jpg"
+        # Busca en la carpeta 'images' un archivo que se llame igual a la pestaña + .jpg
+        image_path = f"images/{selection}.jpg"
         
         if os.path.exists(image_path):
             st.image(image_path, caption=f"Vista de {selection}", use_container_width=True)
         else:
             st.warning(f"No se encontró la imagen: {selection}.jpg")
-            st.info("Asegúrese de que el archivo esté en la carpeta 'fotos' con el nombre exacto de la pestaña.")
+            st.info("Asegúrese de que el archivo esté en la carpeta 'images' con el nombre exacto de la pestaña.")
 
 else:
     st.error("Error al cargar la base de datos. Verifique el archivo Excel en GitHub.")
