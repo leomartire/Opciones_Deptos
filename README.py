@@ -12,7 +12,7 @@ def make_clickable(link):
 @st.cache_data
 def load_data():
     # Load all sheets
-    return pd.read_excel("Opciones_Deptos.xlsx", sheet_name=None)
+    return pd.read_excel("Opciones_Deptos_LM.xlsx", sheet_name=None)
 
 all_sheets = load_data()
 
