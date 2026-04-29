@@ -79,13 +79,32 @@ else:
 
         with col1:
             st.subheader("Ficha Técnica")
-            st.table(df)
+            
+            # 1. Mostramos la tabla sin números de fila
+            st.table(df_clean.assign(index="").set_index("index"))
 
-            # Detector de Links
-            for r_idx, row in df.iterrows():
-                for val in row:
-                    if isinstance(val, str) and "http" in val:
-                        st.link_button(f"🔗 Ver publicación original", val, type="primary")
+            st.divider()
+            st.write("🔗 **Accesos Directos:**")
+
+            # 2. LÓGICA DE BOTONES MEJORADA
+            # Buscamos en todas las celdas del Excel
+            links_encontrados = []
+            for row in df_clean.values:
+                for celda in row:
+                    celda_str = str(celda) # Convertimos a texto por las dudas
+                    if "http" in celda_str:
+                        # Extraemos el link (por si hay texto antes o después)
+                        start = celda_str.find("http")
+                        # Cortamos hasta el primer espacio si lo hubiera
+                        link_final = celda_str[start:].split(" ")[0]
+                        links_encontrados.append(link_final)
+            
+            # Creamos un botón por cada link que encontramos
+            if links_encontrados:
+                for url in list(set(links_encontrados)): # 'set' evita botones duplicados
+                    st.link_button("🚀 Ver Publicación en la Web", url, use_container_width=True, type="primary")
+            else:
+                st.warning("No se detectaron links (http) en esta pestaña de Excel.")
 
         with col2:
             st.subheader("Galería")
