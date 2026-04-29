@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
-st.set_page_config(page_title="Navegador de Propiedades", layout="wide", page_icon="🏠" width=60)
+st.set_page_config(page_title="Navegador de Propiedades", layout="wide", page_icon="🏠" , width=60)
 
 # Estilo personalizado
 st.markdown("""
