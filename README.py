@@ -46,7 +46,7 @@ else:
         st.markdown("### Bienvenido al tablero de control de propiedades")
         
         # Imagen de portada si existe
-        ruta_home = "fotos/home_portada.jpg"
+        ruta_home = "images/home_portada.png"
         if os.path.exists(ruta_home):
             st.image(ruta_home, use_container_width=True)
         
@@ -86,9 +86,9 @@ else:
         with col2:
             st.subheader("Galería")
             # El código busca en la carpeta 'fotos' con extensión .jpg
-            ruta_foto = f"fotos/{opcion}.jpg"
+            ruta_foto = f"images/{opcion}.png"
             
             if os.path.exists(ruta_foto):
                 st.image(ruta_foto, caption=f"Propiedad: {opcion}", use_container_width=True)
             else:
-                st.info(f"💡 Falta subir la foto: fotos/{opcion}.jpg")
+                st.info(f"💡 Falta subir la foto: images/{opcion}.png")
