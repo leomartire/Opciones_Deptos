@@ -81,7 +81,7 @@ else:
             st.subheader("Ficha Técnica")
             
             # 1. Mostramos la tabla sin números de fila
-            st.table(df_clean.assign(index="").set_index("index"))
+            st.table(df_clean.astype(str))
 
             st.divider()
             st.write("🔗 **Accesos Directos:**")
