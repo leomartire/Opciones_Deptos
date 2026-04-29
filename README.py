@@ -5,11 +5,25 @@ import os
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="Navegador de Propiedades", layout="wide", page_icon="🏠")
 
-# Estilo personalizado
+# --- CONFIGURACIÓN DE FUENTE PALATINO LINOTYPE ---
 st.markdown("""
     <style>
-    .main { background-color: #f5f5f5; }
-    .stTable { background-color: white; border-radius: 10px; }
+    /* Importamos fuentes similares de Google por si el sistema no tiene Palatino */
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+
+    /* Aplicamos Palatino Linotype como prioridad, Lora como alternativa */
+    html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, h5, h6, label, table {
+        font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif !important;
+    }
+    
+    /* Ajuste extra: Palatino suele verse un poco más chica, subimos levemente el tamaño base */
+    p, li, label, table {
+        font-size: 1.05rem !important;
+    }
+
+    /* Estilo para las tablas y fondo */
+    .main { background-color: #f8f9fa; }
+    .stTable { background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     </style>
     """, unsafe_allow_html=True)
 
