@@ -80,32 +80,37 @@ else:
         with col1:
             st.subheader("Ficha Técnica")
             
-            # 1. Limpiamos y preparamos los datos para mostrar
-            df_mostrar = df_clean.copy()
-            # Convertimos todo a texto para evitar errores de formato
-            df_mostrar = df_mostrar.astype(str)
-            # Truco final: quitamos los nombres de las filas
-            st.dataframe(df_mostrar, use_container_width=True, hide_index=True)
+            # Verificamos que df_clean tenga contenido para evitar el error .copy()
+            if df_clean is not None and not df_clean.empty:
+                # 1. Creamos la visualización segura
+                df_mostrar = df_clean.astype(str)
+                
+                # Mostramos la tabla sin los números de la izquierda
+                st.dataframe(df_mostrar, use_container_width=True, hide_index=True)
 
-            st.divider()
-            st.write("🔗 **Accesos Directos:**")
+                st.divider()
+                st.write("🔗 **Accesos Directos:**")
 
-            # 2. LÓGICA DE BOTONES (La que busca los links)
-            links_encontrados = []
-            for row in df_clean.values:
-                for celda in row:
-                    celda_str = str(celda)
-                    if "http" in celda_str:
-                        # Extraemos el link limpio
-                        link_limpio = celda_str.split(" ")[0] if " " in celda_str else celda_str
-                        if link_limpio.startswith("http"):
+                # 2. Búsqueda de links mejorada
+                links_encontrados = []
+                for fila in df_clean.values:
+                    for celda in fila:
+                        celda_str = str(celda).strip()
+                        if "http" in celda_str:
+                            # Extraemos el link por si hay texto extra en la celda
+                            inicio = celda_str.find("http")
+                            link_limpio = celda_str[inicio:].split(" ")[0].split("\n")[0]
                             links_encontrados.append(link_limpio)
+                
+                if links_encontrados:
+                    # Usamos set() para no repetir botones si el link está duplicado
+                    for url in sorted(list(set(links_encontrados))):
+                        st.link_button("🚀 Ver Publicación Original", url, use_container_width=True, type="primary")
+                else:
+                    st.info("No se detectaron links en esta pestaña.")
             
-            if links_encontrados:
-                for url in list(set(links_encontrados)):
-                    st.link_button("🚀 Ver Publicación Original", url, use_container_width=True, type="primary")
             else:
-                st.info("No se encontraron links en esta pestaña.")
+                st.warning("Esta pestaña del Excel parece estar vacía.")
 
         with col2:
             st.subheader("Galería")
