@@ -34,7 +34,7 @@ diccionario_hojas = cargar_datos()
 if diccionario_hojas:
     # --- NAVEGACIÓN (SIDEBAR) ---
     st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=100)
-    st.sidebar.title("Índice de Propiedades")
+    st.sidebar.title("Inversiones Inmobiliarias")
     
     # Lista de pestañas disponibles
     nombres_hojas = list(diccionario_hojas.keys())
@@ -51,7 +51,7 @@ if diccionario_hojas:
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        st.subheader("Información Detallada")
+        st.subheader("Dirección")
         # Mostramos la tabla (usamos table para que se vea fija y profesional)
         st.table(df)
 
@@ -63,7 +63,7 @@ if diccionario_hojas:
                     st.link_button(f"🔗 Ver publicación original", val, type="primary")
 
     with col2:
-        st.subheader("Galería")
+        st.subheader("Detalle")
         # Intentamos cargar la imagen desde la carpeta /fotos
         # El nombre del archivo debe ser igual al nombre de la pestaña + .jpg
         ruta_foto = f"images/{opcion}.png"
@@ -103,7 +103,9 @@ if diccionario_hojas:
 
     else:
         # Aquí sigue el código de las otras pestañas (el que ya tienes)
-        st.title(f"📍 {opcion}")
-        # ... el resto de tu código
+        if opcion == "HOME":
+    st.title("📊 Resumen de Búsqueda") # Título para la pantalla principal
+else:
+    st.title(f"📍 {opcion}") # Título para los departamentos (ej: Beruti 3679)
 else:
     st.warning("Esperando carga de datos...")
