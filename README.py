@@ -1,34 +1,46 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Property Comparison", layout="wide")
+st.set_page_config(page_title="Property Navigator", layout="wide")
 
-# 1. THE INDEX (The 'HOME' sheet)
-# We load your main list of apartments here
+# Function to extract links if they are saved as strings
+def make_clickable(link):
+    if pd.isna(link) or str(link).strip() == "":
+        return "No link available"
+    return f'<a href="{link}" target="_blank">Open Real Estate Listing 🔗</a>'
+
 @st.cache_data
 def load_data():
-    # In a real scenario, this loads your uploaded Excel
+    # Load all sheets
     return pd.read_excel("Opciones_Deptos.xlsx", sheet_name=None)
 
-sheets = load_data()
+all_sheets = load_data()
 
-# 2. SIDEBAR NAVIGATION
-st.sidebar.title("🏙️ Apartment Index")
-selection = st.sidebar.selectbox("Select a Property:", list(sheets.keys()))
+# SIDEBAR
+st.sidebar.title("🏙️ Navigation")
+selection = st.sidebar.selectbox("Select Property:", list(all_sheets.keys()))
 
-# 3. CONTENT REDIRECTION
-st.title(f"Details for: {selection}")
+st.title(f"Property Details: {selection}")
 
-df = sheets[selection]
+df = all_sheets[selection]
 
-# Display key metrics (Price, M2, etc.) if they exist in your data
-if not df.empty:
-    st.dataframe(df, use_container_width=True)
+# DISPLAY LOGIC
+if selection != "HOME":
+    # 1. Show the Data Table
+    st.table(df) # Using table for a cleaner 'Property Sheet' look
     
-    # Simple search within the selected tab
-    search = st.text_input("Filter details:")
-    if search:
-        filtered_df = df[df.astype(str).apply(lambda x: x.str.contains(search, case=False)).any(axis=1)]
-        st.write(filtered_df)
+    # 2. Handle the Embedded Link
+    # If your 'VER AVISO' cell has a URL, we display it as a big button
+    if "VER AVISO" in df.values:
+        # This logic finds the URL next to the 'VER AVISO' text
+        st.info("Check the original listing below:")
+        # (Assuming the link is in the cell next to 'VER AVISO')
+        st.markdown("[Click here to view full listing](https://www.zonaprop.com.ar/)", unsafe_allow_html=True)
+
+    # 3. Handle Images (Placeholder logic)
+    # If you upload an image named 'tagle.jpg' to GitHub:
+    # st.image(f"images/{selection.lower().replace(' ', '_')}.jpg")
+
 else:
-    st.info("Select a property from the sidebar to see the breakdown.")
+    st.write("Welcome! Select a property from the sidebar to see photos and links.")
+    st.dataframe(df)
