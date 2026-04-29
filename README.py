@@ -104,7 +104,7 @@ if diccionario_hojas:
     else:
         # Aquí sigue el código de las otras pestañas (el que ya tienes)
        # --- SECCIÓN DE TÍTULOS Y CONTENIDO ---
-if opcion == "HOME":
+    if opcion == "HOME":
     # Todo esto tiene 4 espacios de sangría
     st.title("📊 Resumen de Búsqueda")
     st.markdown("### Bienvenido al análisis comparativo")
