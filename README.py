@@ -46,7 +46,7 @@ else:
         st.markdown("### Bienvenido al tablero de control de propiedades")
         
         # Imagen de portada si existe
-        ruta_home = "images/home_portada.png"
+        ruta_home = "images/HOME.png"
         if os.path.exists(ruta_home):
             st.image(ruta_home, use_container_width=True)
         
@@ -59,14 +59,7 @@ else:
         st.subheader("📋 Lista Comparativa")
         st.dataframe(df, use_container_width=True, hide_index=True)
 
-        # Métricas rápidas
-        st.markdown("---")
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            st.metric(label="Propiedades en Lista", value=len(df))
-        with col_m2:
-            st.metric(label="Zona de Búsqueda", value="Capital Federal")
-
+        
     else:
         # --- DISEÑO PANTALLA DEPARTAMENTO ---
         st.title(f"📍 {opcion}")
