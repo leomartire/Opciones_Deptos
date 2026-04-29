@@ -76,8 +76,34 @@ if diccionario_hojas:
             
     # Botón de retorno al Home si no estás en el Home
     if opcion != "HOME":
-        if st.button("⬅️ Volver al listado principal"):
-            st.info("Usa el menú de la izquierda para navegar.")
+        # Título principal con estilo
+        st.markdown("# 🏠 Buscador de Departamentos")
+        st.markdown("### Bienvenido al tablero de control de propiedades")
+        
+        # Un mensaje de bienvenida amigable
+        st.write("En este sitio puedes comparar las diferentes opciones que estamos evaluando. "
+                 "Usa el menú de la izquierda para ver los detalles, fotos y links de cada propiedad.")
 
+        st.divider() # Una línea divisoria estética
+
+        # Mostramos la tabla general que tienes en tu Excel
+        st.subheader("📋 Lista Comparativa")
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+        # Agregamos unas tarjetas con datos rápidos (Métricas)
+        st.markdown("---")
+        col_m1, col_m2 = st.columns(2)
+        
+        with col_m1:
+            st.metric(label="Propiedades en Lista", value=len(df))
+        with col_m2:
+            st.metric(label="Zona de Búsqueda", value="Capital Federal")
+
+        st.info("💡 Consejo: Selecciona una dirección en el menú lateral para ver las fotos y el link al aviso.")
+
+    else:
+        # Aquí sigue el código de las otras pestañas (el que ya tienes)
+        st.title(f"📍 {opcion}")
+        # ... el resto de tu código
 else:
     st.warning("Esperando carga de datos...")
