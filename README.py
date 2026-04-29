@@ -80,31 +80,32 @@ else:
         with col1:
             st.subheader("Ficha Técnica")
             
-            # 1. Mostramos la tabla sin números de fila
-            st.table(df_clean.astype(str))
+            # 1. Limpiamos y preparamos los datos para mostrar
+            df_mostrar = df_clean.copy()
+            # Convertimos todo a texto para evitar errores de formato
+            df_mostrar = df_mostrar.astype(str)
+            # Truco final: quitamos los nombres de las filas
+            st.dataframe(df_mostrar, use_container_width=True, hide_index=True)
 
             st.divider()
             st.write("🔗 **Accesos Directos:**")
 
-            # 2. LÓGICA DE BOTONES MEJORADA
-            # Buscamos en todas las celdas del Excel
+            # 2. LÓGICA DE BOTONES (La que busca los links)
             links_encontrados = []
             for row in df_clean.values:
                 for celda in row:
-                    celda_str = str(celda) # Convertimos a texto por las dudas
+                    celda_str = str(celda)
                     if "http" in celda_str:
-                        # Extraemos el link (por si hay texto antes o después)
-                        start = celda_str.find("http")
-                        # Cortamos hasta el primer espacio si lo hubiera
-                        link_final = celda_str[start:].split(" ")[0]
-                        links_encontrados.append(link_final)
+                        # Extraemos el link limpio
+                        link_limpio = celda_str.split(" ")[0] if " " in celda_str else celda_str
+                        if link_limpio.startswith("http"):
+                            links_encontrados.append(link_limpio)
             
-            # Creamos un botón por cada link que encontramos
             if links_encontrados:
-                for url in list(set(links_encontrados)): # 'set' evita botones duplicados
-                    st.link_button("🚀 Ver Publicación en la Web", url, use_container_width=True, type="primary")
+                for url in list(set(links_encontrados)):
+                    st.link_button("🚀 Ver Publicación Original", url, use_container_width=True, type="primary")
             else:
-                st.warning("No se detectaron links (http) en esta pestaña de Excel.")
+                st.info("No se encontraron links en esta pestaña.")
 
         with col2:
             st.subheader("Galería")
