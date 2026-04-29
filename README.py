@@ -103,9 +103,41 @@ if diccionario_hojas:
 
     else:
         # Aquí sigue el código de las otras pestañas (el que ya tienes)
-        if opcion == "HOME":
-    st.title("📊 Resumen de Búsqueda") # Título para la pantalla principal
+       # --- SECCIÓN DE TÍTULOS Y CONTENIDO ---
+if opcion == "HOME":
+    # Todo esto tiene 4 espacios de sangría
+    st.title("📊 Resumen de Búsqueda")
+    st.markdown("### Bienvenido al análisis comparativo")
+    
+    # Si tienes una foto de portada, se muestra aquí
+    ruta_home = "fotos/home_portada.jpg"
+    if os.path.exists(ruta_home):
+        st.image(ruta_home, use_container_width=True)
+    
+    st.write("Seleccioná un departamento en el menú de la izquierda para ver los detalles.")
+    st.divider()
+    st.subheader("📋 Lista Comparativa")
+    st.dataframe(df, use_container_width=True, hide_index=True)
+
 else:
-    st.title(f"📍 {opcion}") # Título para los departamentos (ej: Beruti 3679)
-else:
-    st.warning("Esperando carga de datos...")
+    # Todo lo que está después del 'else' también lleva sangría
+    st.title(f"📍 {opcion}")
+    
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        st.subheader("Ficha Técnica")
+        df_clean = df.dropna(how='all').dropna(axis=1, how='all')
+        st.table(df_clean)
+        
+        for row in df_clean.values:
+            for cell in row:
+                if isinstance(cell, str) and "http" in cell:
+                    st.link_button("🌐 Ver publicación original", cell)
+
+    with col2:
+        st.subheader("Galería")
+        ruta_foto = f"fotos/{opcion}.jpg"
+        if os.path.exists(ruta_foto):
+            st.image(ruta_foto, use_container_width=True)
+        else:
+            st.info(f"Falta subir la foto: {opcion}.jpg")
