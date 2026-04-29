@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
-st.set_page_config(page_title="Navegador de Propiedades", layout="wide", page_icon="🏠" , width=60)
+st.set_page_config(page_title="Navegador de Propiedades", layout="wide", page_icon="🏠")
 
 # Estilo personalizado
 st.markdown("""
@@ -28,7 +28,7 @@ if diccionario_hojas is None:
     st.error("No se pudo encontrar el archivo Opciones_Deptos_LM.xlsx. Revisa el nombre en GitHub.")
 else:
     # --- NAVEGACIÓN (SIDEBAR) ---
-    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=100)
+    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=60)
     st.sidebar.title("Inversiones Inmobiliarias")
     
     nombres_hojas = list(diccionario_hojas.keys())
