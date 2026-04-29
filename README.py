@@ -45,7 +45,7 @@ else:
         # Imagen de portada si existe
         ruta_home = "images/HOME.png"
         if os.path.exists(ruta_home):
-            st.image(ruta_home, use_container_width=True)
+            st.image(ruta_home, width=300)
         
         st.write("En este sitio puedes comparar las diferentes opciones que estamos evaluando. "
                  "Usa el menú de la izquierda para ver los detalles, fotos y links de cada propiedad.")
