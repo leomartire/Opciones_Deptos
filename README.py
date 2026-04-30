@@ -113,59 +113,56 @@ if diccionario_hojas:
             with col_main:
                 st.subheader("Ficha Técnica")
                 
-                if not df_clean.empty:
-                    # 1. Creamos una copia para visualizar
-                    df_viz = df_clean.copy()
-
-                    # 2. Formateo numérico y limpieza de celdas "None" / "HOME"
-                    df_viz = df_viz.map(
-                        lambda x: "{:,.0f}".format(x).replace(",", ".") 
-                        if isinstance(x, (int, float)) and not pd.isna(x) 
-                        else ("" if (pd.isna(x) or str(x).strip() == "HOME") else x)
-                    )
-                    
-                    # 3. Limpieza de encabezados "Unnamed"
-                    # Usamos un espacio en blanco único para cada columna "Unnamed" para evitar duplicados
-                    nuevos_columnas = []
-                    for i, col in enumerate(df_viz.columns):
-                        if "Unnamed" in str(col):
-                            nuevos_columnas.append(f" " * (i + 1)) # Espacios únicos
-                        else:
-                            nuevos_columnas.append(col)
-                    df_viz.columns = nuevos_columnas
-                    
-                    # 4. Renderizar tabla con configuración de seguridad
-                    st.data_editor(
-                        df_viz, 
-                        use_container_width=True, 
-                        hide_index=True,
-                        key=f"editor_{opcion}" # Clave única para que no haya conflictos
-                    )
-                    
-                    # 5. Generación de botones para links
-                    st.markdown('<div style="height: 10px;"></div>', unsafe_allow_html=True)
-                    for val in df_clean.values.flatten():
-                        txt = str(val).strip()
-                        if "http" in txt.lower():
-                            start = txt.lower().find("http")
-                            url = txt[start:].split()[0].split('\n')[0]
-                            st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
-                else:
-                    st.warning("No se encontraron registros técnicos válidos en esta hoja.")
-
-            with col_gallery:
+                # 1. Establecer la conexión con Google Sheets
+                conn = st.connection("gsheets", type=GSheetsConnection)
                 
-                # Intentamos cargar la imagen correspondiente a la hoja o unidad
-                img_path = f"images/{hoja_actual}.png"
-                if os.path.exists(img_path):
-                    st.image(img_path, use_container_width=True)
-                else:
-                    st.info("Fotografía técnica o plano no disponible para esta unidad.")
-        else:
-            # Caso de seguridad por si la navegación falla
-            if hoja_actual != "HOME":
-                st.error(f"Error: La hoja de datos '{hoja_actual}' no existe en el Excel.")
+                try:
+                    # 2. Leer los datos en tiempo real (ttl=0 para que no use caché vieja)
+                    df_actual = conn.read(worksheet=hoja_actual, ttl=0)
+                    
+                    if not df_actual.empty:
+                        # 3. Limpieza visual (Unnamed y Formateo)
+                        df_viz = df_actual.copy()
+                        
+                        # Limpiar encabezados "Unnamed"
+                        nuevos_cols = []
+                        for i, col in enumerate(df_viz.columns):
+                            if "Unnamed" in str(col):
+                                nuevos_cols.append(f" " * (i + 1))
+                            else:
+                                nuevos_cols.append(col)
+                        df_viz.columns = nuevos_cols
 
-else:
-    # Error principal si no se encuentra el archivo Excel en la raíz
-    st.error("Error de Sistema: El archivo 'Opciones_Deptos_LM.xlsx' no fue detectado.")
+                        # 4. TABLA EDITABLE: Aquí es donde puedes escribir
+                        df_editado = st.data_editor(
+                            df_viz, 
+                            use_container_width=True, 
+                            hide_index=True,
+                            key=f"editor_{hoja_actual}"
+                        )
+                        
+                        # 5. BOTÓN MÁGICO PARA GUARDAR
+                        st.write("---")
+                        if st.button("💾 Guardar cambios en Google Drive"):
+                            # Volvemos a poner los nombres originales a las columnas antes de guardar
+                            df_para_guardar = df_editado.copy()
+                            df_para_guardar.columns = df_actual.columns
+                            
+                            # Actualizamos la hoja en la nube
+                            conn.update(worksheet=hoja_actual, data=df_para_guardar)
+                            st.success("¡Datos guardados correctamente!")
+                            st.cache_data.clear() # Forzamos la recarga de datos
+                            st.rerun()
+
+                        # Botones de links (permanecen igual)
+                        for val in df_actual.values.flatten():
+                            txt = str(val).strip()
+                            if "http" in txt.lower():
+                                start = txt.lower().find("http")
+                                url = txt[start:].split()[0].split('\n')[0]
+                                st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
+                    else:
+                        st.warning("La hoja está vacía.")
+                        
+                except Exception as e:
+                    st.error(f"Error de conexión: Asegúrate de que la pestaña '{hoja_actual}' exista en tu Google Sheet.")
