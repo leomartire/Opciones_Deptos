@@ -90,7 +90,7 @@ if diccionario_hojas:
             st.session_state.opcion_actual = "HOME"
             st.rerun()
             
-        st.markdown(f"<h1 style='font-size: 1.8rem !important; padding-bottom: 0px;'>Análisis: {opcion}</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h1 style='font-size: 1.2rem !important; padding-bottom: 0px;'>Análisis: {opcion}</h1>", unsafe_allow_html=True)
         
         # 1. Obtención de datos segura
         # Caso especial para "Tagle 2554" o similares
