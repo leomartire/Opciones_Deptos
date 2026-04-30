@@ -10,10 +10,10 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. INICIALIZAR CONEXIÓN (La definimos aquí arriba para que todo el programa la use)
+# 2. INICIALIZAR CONEXIÓN
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# --- ESTILOS CSS PROFESIONALES ---
+# --- ESTILOS CSS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -26,29 +26,38 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. CAPA DE DATOS (REPARADA: Ya no busca el .xlsx)
+# 3. CAPA DE DATOS (CORREGIDA PARA RECUPERAR EL MENÚ)
 @st.cache_data(ttl=0)
-def cargar_datos():
+def cargar_todas_las_hojas():
     try:
-        # Leemos el archivo de Google directamente
-        return conn.read()
-    except Exception as e:
-        st.error(f"No se pudo conectar con Google Sheets: {e}")
-        return None
+        # Forzamos a que lea todas las pestañas del Google Sheet
+        # Usamos un truco de pandas para obtener los nombres de las hojas
+        url = st.secrets["connections"]["gsheets"]["spreadsheet"]
+        all_sheets = pd.read_excel(url, sheet_name=None, engine='openpyxl')
+        return all_sheets
+    except Exception:
+        try:
+            # Si falla lo anterior, intentamos la conexión directa de Streamlit
+            return conn.read()
+        except Exception as e:
+            st.error(f"Error de conexión: {e}")
+            return None
 
-diccionario_hojas = cargar_datos()
+diccionario_hojas = cargar_todas_las_hojas()
 
 # 4. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas is not None:
-    # Si Google nos devuelve una sola hoja, la convertimos en lista para que el menú no falle
-    if isinstance(diccionario_hojas, pd.DataFrame):
-        nombres_hojas = ["HOME"] # O el nombre de tu hoja principal
-    else:
+    # Si es un diccionario, sacamos los nombres de las pestañas
+    if isinstance(diccionario_hojas, dict):
         nombres_hojas = list(diccionario_hojas.keys())
-    
+    else:
+        # Si solo trajo una tabla, el menú solo tendrá esa tabla
+        nombres_hojas = ["HOME"]
+
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
+    # --- VISTA HOME (MENÚ PRINCIPAL) ---
     if st.session_state.opcion_actual == "HOME":
         st.markdown("---")
         col_img, col_menu = st.columns([0.5, 1.5], gap="large")
@@ -59,58 +68,53 @@ if diccionario_hojas is not None:
                 st.image(img_home, use_container_width=True)
         
         with col_menu:
+            st.subheader("Unidades Disponibles")
             seleccion = st.radio(
-                "Seleccione Unidad:", 
+                "Seleccione una propiedad para ver el detalle:", 
                 nombres_hojas, 
                 index=nombres_hojas.index("HOME") if "HOME" in nombres_hojas else 0
             )
             
             if seleccion != "HOME":
-                if st.button(f"Ver Detalle de {seleccion}", use_container_width=True):
+                if st.button(f"Abrir Ficha de {seleccion}", use_container_width=True):
                     st.session_state.opcion_actual = seleccion
                     st.rerun()
 
+    # --- VISTA DETALLE (LA FICHA TÉCNICA) ---
     else:
-        # --- VISTA DE DETALLE (FICHA TÉCNICA) ---
         opcion = st.session_state.opcion_actual
-        titulo_limpio = opcion.replace("HOME", "").strip()
         
-        if st.button("← Volver al Inicio"):
+        if st.button("← Volver al Menú Principal"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
             
-        st.markdown(f"<h1 style='font-size: 1.6rem !important;'>Análisis: {titulo_limpio}</h1>", unsafe_allow_html=True)
-        
-        # Determinamos la hoja a leer
-        hoja_actual = "Aviso" if (opcion == "Tagle 2554") else opcion
+        st.markdown(f"<h1>Análisis de Unidad: {opcion}</h1>", unsafe_allow_html=True)
         
         col_main, col_gallery = st.columns([1.2, 0.8], gap="large")
         
         with col_main:
-            st.subheader("Ficha Técnica")
             try:
-                # LEER FICHA EN TIEMPO REAL
-                df_actual = conn.read(worksheet=hoja_actual.strip(), ttl=0)
+                # Leemos la pestaña específica de Google Sheets
+                df_ficha = conn.read(worksheet=opcion.strip(), ttl=0)
                 
-                if df_actual is not None and not df_actual.empty:
-                    df_viz = df_actual.copy()
-                    
-                    # TABLA EDITABLE
+                if df_ficha is not None and not df_ficha.empty:
+                    # Mostramos la tabla para que puedas editarla
                     df_editado = st.data_editor(
-                        df_viz, 
+                        df_ficha, 
                         use_container_width=True, 
                         hide_index=True,
-                        key=f"editor_{hoja_actual}"
+                        key=f"editor_{opcion}"
                     )
                     
-                    if st.button("💾 Guardar cambios en Google Drive"):
-                        conn.update(worksheet=hoja_actual.strip(), data=df_editado)
-                        st.success("¡Guardado!")
+                    if st.button("💾 Guardar Cambios en la Nube"):
+                        conn.update(worksheet=opcion.strip(), data=df_editado)
+                        st.success("¡Cambios guardados exitosamente!")
                         st.cache_data.clear()
                         st.rerun()
                 else:
-                    st.warning(f"No hay datos en la pestaña '{hoja_actual}'")
+                    st.warning("No se encontraron datos en esta pestaña.")
             except Exception as e:
-                st.error(f"Error al cargar la ficha: Asegúrate que la pestaña se llame exactamente '{hoja_actual}'")
+                st.error(f"No se pudo cargar la pestaña '{opcion}'. Verifica el nombre en Google Sheets.")
+
 else:
-    st.warning("No se encontraron datos. Revisa la configuración de Google Sheets.")
+    st.error("No se pudo cargar el archivo. Verifica que la URL en 'Secrets' sea correcta.")
