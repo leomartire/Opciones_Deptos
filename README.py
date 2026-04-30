@@ -89,7 +89,7 @@ if diccionario_hojas:
                     with fila[1]:
                         key_match = val_unidad.upper()
                         if key_match in hojas_reales:
-                            if st.button("Ver Análisis", key=f"btn_{index}"):
+                            if st.button("Ver +", key=f"btn_{index}"):
                                 st.session_state.opcion_actual = hojas_reales[key_match]
                                 st.rerun()
                         else:
