@@ -71,7 +71,6 @@ if diccionario_hojas:
     # --- LÓGICA DE RENDERIZADO ---
     
     if opcion == "HOME":
-        st.title("Inversiones Inmobiliarias")
         img_home = "images/HOME.png"
         if os.path.exists(img_home):
             st.image(img_home, use_container_width=True)
