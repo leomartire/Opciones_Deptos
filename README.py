@@ -5,7 +5,7 @@ import os
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="Inversiones Inmobiliarias | Panel de Control", layout="wide", page_icon="🏠")
 
-# --- ESTILOS CSS AVANZADOS (ESTILO CORPORATIVO) ---
+# --- ESTILOS CSS AVANZADOS (ESTILO CORPORATIVO Y CENTRADO DE SIDEBAR) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
@@ -33,6 +33,35 @@ st.markdown("""
         box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         margin-bottom: 25px;
     }
+
+    /* --- CENTRADO DEL MENU LATERAL --- */
+    [data-testid="stSidebarNav"] {
+        display: flex;
+        justify-content: center;
+    }
+    
+    section[data-testid="stSidebar"] > div {
+        text-align: center;
+    }
+
+    /* Centrar imagen en sidebar */
+    [data-testid="stSidebar"] [data-testid="stImage"] {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Centrar radio buttons y textos en sidebar */
+    [data-testid="stSidebar"] .st-expander, [data-testid="stSidebar"] .stRadio > label {
+        display: flex;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    [data-testid="stSidebar"] .stRadio div[role="radiogroup"] {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -51,12 +80,12 @@ diccionario_hojas = cargar_datos()
 if diccionario_hojas is not None:
     nombres_hojas = list(diccionario_hojas.keys())
     
-    # Sidebar Corporativo
-    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=50)
+    # Sidebar Corporativo (Ahora centrado por CSS)
+    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=60)
     st.sidebar.markdown("### Navegación")
     opcion = st.sidebar.radio("Ir a:", nombres_hojas, key="nav_main_v3")
 
-    # --- PORTADA (HOME - MINIMALISTA) ---
+    # --- PORTADA (HOME - MINIMALISTA ABSOLUTA) ---
     if opcion == "HOME":
         st.title("📊 Panel de Control Inmobiliario")
         
@@ -65,36 +94,18 @@ if diccionario_hojas is not None:
                 <span style="color: #64748b; font-size: 0.85rem; text-transform: uppercase; font-weight: bold;">Leonardo Martire | Inversiones</span>
                 <p style="margin-top: 10px; color: #1e293b; font-size: 1.1rem; line-height: 1.6;">
                     Bienvenido al centro de monitoreo de oportunidades. <br>
-                    Utilice el <b>menú lateral</b> para acceder al <b>Detalle de Inversión</b> de cada propiedad.
+                    Utilice el <b>menú lateral de la izquierda</b> para navegar entre las propiedades y acceder al <b>Detalle de Inversión</b>.
                 </p>
             </div>
         """, unsafe_allow_html=True)
 
         st.divider()
         
-        # --- SECCIÓN DE ACCESOS DIRECTOS ---
-        st.subheader("🔗 Accesos Directos a la Web")
-        
-        deptos_activos = [h for h in nombres_hojas if h != "HOME"]
-        
-        if deptos_activos:
-            # Mostramos botones limpios para ir directo a Zonaprop/Argenprop
-            cols = st.columns(4)
-            for i, depto in enumerate(deptos_activos):
-                with cols[i % 4]:
-                    df_t = diccionario_hojas[depto]
-                    # Extraer el primer link encontrado en la hoja
-                    link = next((str(v) for v in df_t.values.flatten() if "http" in str(v).lower()), None)
-                    
-                    if link:
-                        st.link_button(f"🌐 {depto}", link.strip(), use_container_width=True)
-                    else:
-                        st.button(f"📍 {depto} (Sin Link)", disabled=True, use_container_width=True)
-        
         # Imagen de fondo sutil
-        st.write("")
         if os.path.exists("images/home_portada.png"):
-            st.image("images/home_portada.png", width=280)
+            st.image("images/home_portada.png", width=350)
+        else:
+            st.info("👈 Seleccione una unidad en el menú para comenzar el análisis.")
 
     # --- DETALLE DE PROPIEDAD ---
     else:
