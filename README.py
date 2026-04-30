@@ -41,6 +41,7 @@ diccionario_hojas = cargar_datos()
 
 # 4. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
+    # Mapeo de pestañas (ignora espacios y mayúsculas)
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
     if "opcion_actual" not in st.session_state:
@@ -59,41 +60,49 @@ if diccionario_hojas:
         
         with col_menu:
             if "HOME" in diccionario_hojas:
+                # Limpiamos filas vacías del Excel
                 df_home = diccionario_hojas["HOME"].dropna(how='all')
                 
+                # Encabezados
                 c_head = st.columns([1.5, 1, 2])
                 c_head[0].markdown("<p class='texto-aplicacion'><b>Unidad</b></p>", unsafe_allow_html=True)
                 c_head[1].markdown("<p class='texto-aplicacion'><b>Detalle</b></p>", unsafe_allow_html=True)
                 c_head[2].markdown("<p class='texto-aplicacion'><b>Contacto</b></p>", unsafe_allow_html=True)
                 st.markdown("---")
 
-                unidades_vistas = set()
+                # SET para evitar que la lista se repita dos veces
+                unidades_procesadas = set()
 
                 for index, row in df_home.iterrows():
                     val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
                     
-                    if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
+                    # Filtros: No vacíos, no el título "UNIDAD", y no duplicados
+                    if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_procesadas:
                         continue
                     
-                    unidades_vistas.add(val_unidad)
+                    unidades_procesadas.add(val_unidad)
                     fila = st.columns([1.5, 1, 2])
                     
+                    # Unidad
                     fila[0].markdown(f"<p class='texto-aplicacion'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
                     
+                    # Botón con validación de pestaña
                     with fila[1]:
-                        unidad_key = val_unidad.upper()
-                        if unidad_key in hojas_reales:
+                        key_busqueda = val_unidad.upper()
+                        if key_busqueda in hojas_reales:
                             if st.button("Ver Análisis", key=f"btn_{index}"):
-                                st.session_state.opcion_actual = hojas_reales[unidad_key]
+                                st.session_state.opcion_actual = hojas_reales[key_busqueda]
                                 st.rerun()
                         else:
-                            fila[1].markdown(f"<p style='color:red; font-size:10px;'>Pestaña '{val_unidad}' no hallada</p>", unsafe_allow_html=True)
+                            fila[1].markdown(f"<p style='color:red; font-size:10px;'>Sin pestaña: {val_unidad}</p>", unsafe_allow_html=True)
                     
+                    # Contacto
                     val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
                     fila[2].markdown(f"<p class='texto-aplicacion'>{val_contacto}</p>", unsafe_allow_html=True)
+                    
                     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- VISTA DE DETALLE (CORREGIDA PARA MOSTRAR TODAS LAS COLUMNAS) ---
+    # --- VISTA DE DETALLE (TABLA COMPLETA + IMAGEN) ---
     else:
         opcion = st.session_state.opcion_actual
         if st.button("← Volver al Panel"):
@@ -103,19 +112,21 @@ if diccionario_hojas:
         st.subheader(f"Análisis: {opcion}")
         
         if opcion in diccionario_hojas:
-            # Recuperamos la hoja completa sin filtrar columnas por nombre
+            # Traemos la hoja de la unidad sin borrar columnas
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0)
             
-            # Reemplazamos nombres de columnas "Unnamed" por espacios vacíos para una visualización limpia
+            # Limpiamos nombres feos de encabezado (Unnamed) para que se vea prolijo
             df_ficha.columns = ["" if "Unnamed" in str(col) else col for col in df_ficha.columns]
             
             col_t, col_f = st.columns([1.2, 0.8], gap="medium")
             with col_t:
-                # Ahora st.table mostrará la columna A y la B (y cualquier otra con datos)
+                # Aquí aparecerán Columna A, B y todas las que tengan datos
                 st.table(df_ficha)
             with col_f:
                 ruta_img = f"images/{opcion}.png"
                 if os.path.exists(ruta_img):
                     st.image(ruta_img, use_container_width=True)
+                else:
+                    st.info(f"Imagen pendiente: {opcion}.png")
 else:
-    st.error("No se encontró el archivo Excel.")
+    st.error("Error: Archivo de datos no encontrado.")
