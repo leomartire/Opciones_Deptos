@@ -10,12 +10,13 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. CONEXIÓN ÚNICA A GOOGLE SHEETS
+# 2. CONEXIÓN DIRECTA A GOOGLE SHEETS
+# Eliminamos cualquier referencia a archivos .xlsx locales para evitar el error de conexión
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# 3. LISTA COMPLETA DE FICHAS (Asegúrate de que el nombre sea IDÉNTICO al de la pestaña en Google)
-# He incluido todas las que mencionaste en tus versiones anteriores
-nombres_hojas = ["HOME", "Lafinur 3000", "Tagle 2554", "Cabello 3501", "Aviso"]
+# 3. LISTA DE FICHAS REALES
+# He restaurado las unidades según tu estructura de inversión
+nombres_hojas = ["HOME", "Lafinur 3000", "Tagle 2554", "Cabello 3501"]
 
 # --- ESTILOS CSS ---
 st.markdown("""
@@ -28,7 +29,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 4. LÓGICA DE NAVEGACIÓN
+# 4. LÓGICA DE NAVEGACIÓN (Session State)
 if "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
@@ -38,20 +39,19 @@ if st.session_state.opcion_actual == "HOME":
     col_img, col_menu = st.columns([0.6, 1.4], gap="large")
     
     with col_img:
-        # Solo intenta cargar la imagen si existe, no bloquea el resto
         if os.path.exists("images/HOME.png"):
             st.image("images/HOME.png", use_container_width=True)
     
     with col_menu:
-        st.write("### Seleccione Unidad para analizar:")
+        # El radio button ahora muestra tus 4 opciones principales
         seleccion = st.radio(
-            "Unidades Disponibles:", 
+            "Seleccione Unidad para analizar:", 
             nombres_hojas,
-            label_visibility="collapsed"
+            index=nombres_hojas.index(st.session_state.opcion_actual) if st.session_state.opcion_actual in nombres_hojas else 0
         )
         
         if seleccion != "HOME":
-            if st.button(f"🚀 Ver Detalle de {seleccion}", use_container_width=True):
+            if st.button(f"Abrir Ficha de {seleccion}", use_container_width=True):
                 st.session_state.opcion_actual = seleccion
                 st.rerun()
 
@@ -63,15 +63,14 @@ else:
         st.session_state.opcion_actual = "HOME"
         st.rerun()
         
-    st.subheader(f"Análisis: {opcion}")
+    st.subheader(f"Análisis de Unidad: {opcion}")
     
     try:
-        # LEER DATOS DIRECTAMENTE DE LA PESTAÑA SELECCIONADA
-        # worksheet=opcion le dice a Google qué pestaña abrir
+        # CONEXIÓN CRÍTICA: Lee la pestaña que coincide con el nombre seleccionado
         df = conn.read(worksheet=opcion, ttl=0)
         
         if df is not None:
-            # Mostramos el editor de datos
+            # Mostramos el editor de datos para que puedas gestionar el flujo de dinero
             df_editado = st.data_editor(
                 df, 
                 use_container_width=True, 
@@ -79,15 +78,12 @@ else:
                 key=f"editor_{opcion}"
             )
             
-            # Botón para guardar cambios
-            if st.button("💾 Guardar cambios en la nube"):
+            if st.button("💾 Guardar cambios en Google Drive"):
                 conn.update(worksheet=opcion, data=df_editado)
-                st.success("¡Datos actualizados correctamente en Google Sheets!")
+                st.success(f"Datos de {opcion} actualizados correctamente.")
                 st.cache_data.clear()
                 st.rerun()
-        else:
-            st.error("No se pudieron recuperar datos de esta pestaña.")
-
+    
     except Exception as e:
-        st.error(f"Error de conexión con la pestaña '{opcion}'")
-        st.info("Revisa que en tu archivo de Google Sheets la pestaña se llame exactamente igual (ojo con los espacios al final).")
+        st.error(f"Error de conexión: No se pudo encontrar la pestaña '{opcion}' en Google Sheets.")
+        st.info("Asegúrate de que la pestaña en tu archivo de Google se llame exactamente igual.")
