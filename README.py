@@ -77,7 +77,7 @@ if diccionario_hojas:
                 unidades_vistas = set()
 
                 for index, row in df_home.iterrows():
-                    col_izq_tab, col_cnt_tab, col_der_tab = st.columns([1, 4, 1]
+                    col_izq_tab, col_cnt_tab, col_der_tab = st.columns([1, 4, 1])
                     # Leemos por posición: Columna 0 (A) y Columna 2 (C)
                     val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
                     
