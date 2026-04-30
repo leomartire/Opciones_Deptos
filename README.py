@@ -70,13 +70,13 @@ if diccionario_hojas:
                 df_home = diccionario_hojas["HOME"]
                 unidades_vistas = set()
 
-                # 2. TABLA EN HTML (Para forzar que sea horizontal en el celular)
-                # Encabezados
+                # 2. TABLA EN HTML (Ajuste de anchos y altos)
+                # Encabezados: Achicamos fuentes y ajustamos flex para comprimir
                 st.markdown("""
-                    <div style='display: flex; font-weight: bold; text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 5px; font-size: 11px;'>
-                        <div style='flex: 1.5;'>Unidad</div>
-                        <div style='flex: 1;'>Detalle</div>
-                        <div style='flex: 2;'>Contacto</div>
+                    <div style='display: flex; font-weight: bold; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 2px; font-size: 10px;'>
+                        <div style='flex: 1;'>Unidad</div>
+                        <div style='flex: 0.6;'>Detalle</div>
+                        <div style='flex: 1.4;'>Contacto</div>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -88,13 +88,12 @@ if diccionario_hojas:
                     
                     unidades_vistas.add(val_unidad)
                     
-                    # FILA PERSONALIZADA
-                    # Usamos st.columns SOLO para el botón para que mantenga la funcionalidad, 
-                    # pero pegado al texto para que no se rompa la línea.
-                    c1, c2, c3 = st.columns([1.5, 1, 2], gap="small")
+                    # FILA PERSONALIZADA: Proporciones más apretadas [1, 0.6, 1.4]
+                    c1, c2, c3 = st.columns([1, 0.6, 1.4], gap="small")
                     
                     with c1:
-                        st.markdown(f"<p style='font-size:11px; margin:0; padding-top:5px;'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
+                        # Reducimos padding-top para pegar más la fila
+                        st.markdown(f"<p style='font-size:10px; margin:0; padding-top:2px;'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
                     
                     with c2:
                         key_match = val_unidad.upper()
@@ -105,9 +104,11 @@ if diccionario_hojas:
                     
                     with c3:
                         val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
-                        st.markdown(f"<p style='font-size:11px; margin:0; padding-top:5px; text-align:center;'>{val_contacto}</p>", unsafe_allow_html=True)
+                        # Alineamos a la izquierda para que no ocupe ancho innecesario centrando
+                        st.markdown(f"<p style='font-size:10px; margin:0; padding-top:2px;'>{val_contacto}</p>", unsafe_allow_html=True)
                     
-                    st.markdown("<hr style='margin: 0.2rem 0;'>", unsafe_allow_html=True)
+                    # Separador casi invisible y con margen mínimo para achicar el alto total
+                    st.markdown("<hr style='margin: 0.1rem 0; opacity: 0.1;'>", unsafe_allow_html=True)
     # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
