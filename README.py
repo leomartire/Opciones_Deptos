@@ -9,40 +9,43 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. ESTILO CSS DEFINITIVO (Forzar filas en móvil)
+# 2. CSS PARA CENTRADO Y TABLA (Blindado)
 st.markdown("""
     <style>
-    /* 1. Achicar márgenes globales */
+    /* Centrar el bloque principal en PC */
+    @media (min-width: 1024px) {
+        .block-container {
+            max-width: 400px !important;
+            margin: auto !important;
+        }
+    }
+    
+    /* Reset de padding para móvil */
     .block-container {
         padding-top: 1rem !important;
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
     }
 
-    /* 2. EL TRUCO PARA EL MÓVIL: Evitar que las columnas se apilen */
-    [data-testid="column"] {
-        flex: 1 1 0% !important;
-        min-width: 0px !important;
-    }
-
-    /* 3. Estilo de textos y botones */
-    .tabla-texto {
-        font-size: 11px !important;
-        margin: 0 !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
+    /* Estilo para los botones dentro de la tabla */
     .stButton>button {
         height: 24px !important;
-        padding: 0px 5px !important;
-        font-size: 10px !important;
-        min-height: 24px !important;
+        padding: 0px 10px !important;
+        font-size: 11px !important;
         width: 100% !important;
     }
 
-    hr { margin: 4px 0 !important; opacity: 0.2; }
+    /* Forzamos que la tabla ocupe todo el ancho disponible */
+    .tabla-app {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+    .tabla-app td {
+        padding: 8px 4px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -63,50 +66,43 @@ if diccionario_hojas:
 
     # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        # Centrado para PC (En móvil st.columns([1, 4, 1]) se adapta bien)
-        _, col_centro, _ = st.columns([0.2, 5, 0.2])
+        # Imagen pequeña y centrada
+        if os.path.exists("images/HOME.png"):
+            # Usamos un div para centrar y dimensionar la imagen
+            st.markdown("<div style='text-align: center;'><img src='app/static/images/HOME.png' style='width: 120px;'></div>", unsafe_allow_html=True)
+            # Si la línea de arriba no carga la imagen por la ruta, usa la nativa:
+            # st.image("images/HOME.png", width=120)
         
-        with col_centro:
-            if os.path.exists("images/HOME.png"):
-                st.image("images/HOME.png", width=150) # Imagen pequeña controlada
-            
-            st.markdown("<h3 style='text-align: center; font-size: 16px; margin:0;'>Panel de Control</h3>", unsafe_allow_html=True)
-            st.markdown("---")
+        st.markdown("<h3 style='text-align: center; margin-bottom: 20px;'>Panel de Control</h3>", unsafe_allow_html=True)
 
-            if "HOME" in diccionario_hojas:
-                df_home = diccionario_hojas["HOME"]
-                unidades_vistas = set()
+        if "HOME" in diccionario_hojas:
+            df_home = diccionario_hojas["HOME"]
+            unidades_vistas = set()
 
-                # Encabezado Manual
-                h = st.columns([1, 0.8, 1.2])
-                h[0].markdown("<b style='font-size:10px;'>Unidad</b>", unsafe_allow_html=True)
-                h[1].markdown("<center><b style='font-size:10px;'>Acción</b></center>", unsafe_allow_html=True)
-                h[2].markdown("<div style='text-align:right'><b style='font-size:10px;'>Contacto</b></div>", unsafe_allow_html=True)
-                st.markdown("<hr>", unsafe_allow_html=True)
-
-                if df_home is not None:
-                    for index, row in df_home.iterrows():
-                        val_unidad = str(row[0]).strip() if pd.notnull(row[0]) else ""
-                        if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
-                            continue
-                        unidades_vistas.add(val_unidad)
-                        
-                        # Fila que NO se apila en móvil gracias al CSS
-                        fila = st.columns([1, 0.8, 1.2])
-                        
-                        with fila[0]:
-                            st.markdown(f"<p class='tabla-texto'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
-                        
-                        with fila[1]:
-                            if st.button("Ver", key=f"btn_{index}"):
-                                st.session_state.opcion_actual = hojas_reales.get(val_unidad.upper(), "HOME")
-                                st.rerun()
-                        
-                        with fila[2]:
-                            val_contacto = str(row[2]).strip() if len(row) > 2 and pd.notnull(row[2]) else "-"
-                            st.markdown(f"<p class='tabla-texto' style='text-align:right'>{val_contacto}</p>", unsafe_allow_html=True)
-                        
-                        st.markdown("<hr>", unsafe_allow_html=True)
+            # Renderizamos la tabla fila por fila
+            for index, row in df_home.iterrows():
+                val_unidad = str(row[0]).strip() if pd.notnull(row[0]) else ""
+                
+                if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
+                    continue
+                unidades_vistas.add(val_unidad)
+                
+                # Usamos st.columns pero SIN gap para que no se apilen
+                c1, c2, c3 = st.columns([1, 0.8, 1.2])
+                
+                with c1:
+                    st.markdown(f"<p style='margin: 5px 0; font-weight: bold;'>{val_unidad}</p>", unsafe_allow_html=True)
+                
+                with c2:
+                    if st.button("Ver", key=f"btn_{index}"):
+                        st.session_state.opcion_actual = hojas_reales.get(val_unidad.upper(), "HOME")
+                        st.rerun()
+                
+                with c3:
+                    val_contacto = str(row[2]).strip() if len(row) > 2 and pd.notnull(row[2]) else "-"
+                    st.markdown(f"<div style='text-align: right; margin: 5px 0;'>{val_contacto}</div>", unsafe_allow_html=True)
+                
+                st.markdown("<hr style='margin: 2px 0; opacity: 0.2;'>", unsafe_allow_html=True)
 
     # --- VISTA DE DETALLE ---
     else:
