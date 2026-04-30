@@ -14,7 +14,7 @@ st.markdown("""
     <style>
     /* Contenedor principal para centrar en PC */
     @media (min-width: 1024px) {
-        .main-container { max-width: 500px; margin: auto; }
+        .main-container { max-width: 300px; margin: auto; }
         }
     
     /* Ajustes de fuente y espaciado general */
