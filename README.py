@@ -27,10 +27,10 @@ st.markdown("""
 
     /* Botones pequeños y centrados */
     .stButton>button {
-        height: 18px !important;
+        height: 24px !important;
         padding: 0px 10px !important;
         font-size: 10px !important;
-        min-height: 18px !important;
+        min-height: 24px !important;
         width: 90% !important;
     }
 
