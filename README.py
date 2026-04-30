@@ -3,69 +3,71 @@ import pandas as pd
 import os
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
-st.set_page_config(page_title="Inversiones Inmobiliarias | Panel de Control", layout="wide", page_icon="🏠")
+st.set_page_config(
+    page_title="Gestión de Inversiones Inmobiliarias", 
+    layout="wide", 
+    page_icon="🏢"
+)
 
-# --- ESTILOS CSS AVANZADOS (ESTILO CORPORATIVO Y CENTRADO DE SIDEBAR) ---
+# --- ESTILOS CSS PROFESIONALES (SISTEMA DE DISEÑO LIMPIO) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+    /* Importación de fuente de alta calidad */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
     
-    html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, h5, h6, label, table {
-        font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif !important;
+    html, body, [class*="css"], .stMarkdown, p, label, table {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        color: #1e293b;
+    }
+
+    /* Fondo de aplicación sutil */
+    .stApp {
+        background-color: #fcfcfd;
+    }
+
+    /* Títulos con peso visual ejecutivo */
+    h1 { 
+        font-size: 2.2rem !important; 
+        font-weight: 600 !important; 
+        color: #0f172a !important; 
+        letter-spacing: -0.02em;
     }
     
-    /* Estilo para el contenedor principal */
-    .main { background-color: #f4f7f9; }
-    
-    /* Títulos Ejecutivos */
-    h1 { font-size: 1.8rem !important; color: #1e3a8a !important; font-weight: 700 !important; margin-bottom: 10px !important; }
-    h3 { font-size: 1.1rem !important; color: #475569 !important; font-weight: 600 !important; }
+    h2 { font-size: 1.4rem !important; color: #334155 !important; font-weight: 500 !important; }
+    h3 { font-size: 1.1rem !important; color: #64748b !important; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* Ajuste de tablas */
-    .stDataFrame { border: 1px solid #e2e8f0; border-radius: 8px; background-color: white; padding: 10px; }
+    /* Contenedor de bienvenida (Dashboard Card) */
+    .dashboard-hero {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        margin-bottom: 2rem;
+    }
+
+    /* Sidebar - Estética original limpia */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e2e8f0;
+    }
     
-    /* Etiquetas de bienvenida */
-    .welcome-box {
-        background-color: white;
-        padding: 25px;
+    /* Estilo de tablas (Dataframes) */
+    .stDataFrame {
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
-        border-left: 5px solid #1e3a8a;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        margin-bottom: 25px;
     }
 
-    /* --- CENTRADO DEL MENU LATERAL --- */
-    [data-testid="stSidebarNav"] {
-        display: flex;
-        justify-content: center;
-    }
-    
-    section[data-testid="stSidebar"] > div {
-        text-align: center;
-    }
-
-    /* Centrar imagen en sidebar */
-    [data-testid="stSidebar"] [data-testid="stImage"] {
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    /* Centrar radio buttons y textos en sidebar */
-    [data-testid="stSidebar"] .st-expander, [data-testid="stSidebar"] .stRadio > label {
-        display: flex;
-        justify-content: center;
-        text-align: center;
-    }
-    
-    [data-testid="stSidebar"] .stRadio div[role="radiogroup"] {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    /* Botones de acción */
+    .stButton button, .stLinkButton a {
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. CARGA DE DATOS
+# 2. CAPA DE DATOS (Mantenemos la lógica de negocio)
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
@@ -76,42 +78,49 @@ def cargar_datos():
 
 diccionario_hojas = cargar_datos()
 
-# 3. LÓGICA DE NAVEGACIÓN
+# 3. NAVEGACIÓN Y ESTRUCTURA
 if diccionario_hojas is not None:
     nombres_hojas = list(diccionario_hojas.keys())
     
-    # Sidebar Corporativo (Ahora centrado por CSS)
-    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=60)
-    st.sidebar.markdown("### Navegación")
-    opcion = st.sidebar.radio("Ir a:", nombres_hojas, key="nav_main_v3")
+    # Sidebar: Navegación simple y profesional
+    with st.sidebar:
+        st.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=40)
+        st.markdown("### SISTEMA DE GESTIÓN")
+        opcion = st.sidebar.radio("Seleccione Unidad:", nombres_hojas, key="nav_v4")
+        st.spacer = st.empty()
 
-    # --- PORTADA (HOME - MINIMALISTA ABSOLUTA) ---
+    # --- PORTADA (HOME) ---
     if opcion == "HOME":
-        st.title("📊 Panel de Control Inmobiliario")
+        st.markdown('<div style="height: 20px;"></div>', unsafe_allow_html=True)
+        st.title("Inversiones Inmobiliarias")
         
-        st.markdown(f"""
-            <div class="welcome-box">
-                <span style="color: #64748b; font-size: 0.85rem; text-transform: uppercase; font-weight: bold;">Leonardo Martire | Inversiones</span>
-                <p style="margin-top: 10px; color: #1e293b; font-size: 1.1rem; line-height: 1.6;">
-                    Bienvenido al centro de monitoreo de oportunidades. <br>
-                    Utilice el <b>menú lateral de la izquierda</b> para navegar entre las propiedades y acceder al <b>Detalle de Inversión</b>.
+        st.markdown("""
+            <div class="dashboard-hero">
+                <h2 style="margin-top:0;">Resumen Ejecutivo</h2>
+                <p style="font-size: 1.1rem; color: #475569; max-width: 800px;">
+                    Plataforma de análisis de activos inmobiliarios para la toma de decisiones financieras. 
+                    Acceda a las métricas detalladas y documentación de cada unidad mediante el panel lateral.
                 </p>
             </div>
         """, unsafe_allow_html=True)
 
-        st.divider()
-        
-        # Imagen de fondo sutil
-        if os.path.exists("images/home_portada.png"):
-            st.image("images/home_portada.png", width=350)
-        else:
-            st.info("👈 Seleccione una unidad en el menú para comenzar el análisis.")
+        # Resumen visual minimalista
+        col_info, col_img = st.columns([1, 1.2])
+        with col_info:
+            st.subheader("Estado de la Cartera")
+            st.write(f"📂 **Unidades en análisis:** {len(nombres_hojas)-1}")
+            st.write("📅 **Última actualización:** Abril 2024")
+            st.info("Navegue por el panel izquierdo para ver el detalle de cada activo.")
+            
+        with col_img:
+            if os.path.exists("images/home_portada.png"):
+                st.image("images/home_portada.png", use_container_width=True)
 
-    # --- DETALLE DE PROPIEDAD ---
+    # --- DETALLE DE PROPIEDAD (VISTA TÉCNICA) ---
     else:
-        st.title(f"📍 {opcion}")
+        st.title(f"{opcion}")
         
-        # Lógica Espejo para Tagle 2554
+        # Lógica de Datos "Espejo"
         if opcion == "Tagle 2554" and "Aviso" in diccionario_hojas:
             df_display = diccionario_hojas["Aviso"]
             foto_id = "Aviso"
@@ -121,32 +130,32 @@ if diccionario_hojas is not None:
 
         df_clean = df_display.dropna(how='all').dropna(axis=1, how='all')
         
-        c1, c2 = st.columns([1.2, 0.8])
+        col_main, col_gallery = st.columns([1.2, 0.8], gap="large")
         
-        with c1:
-            st.subheader("Detalle de Inversión")
+        with col_main:
+            st.subheader("Análisis de la Unidad")
             if not df_clean.empty:
-                # Formateo de números (miles con punto, 0 decimales)
+                # Formato numérico profesional
                 df_viz = df_clean.map(lambda x: "{:,.0f}".format(x).replace(",", ".") if isinstance(x, (int, float)) else x)
                 st.dataframe(df_viz, use_container_width=True, hide_index=True)
                 
-                st.divider()
-                st.markdown("### 🔗 Links de Referencia")
+                # Enlaces de origen
+                st.markdown('<div style="height: 20px;"></div>', unsafe_allow_html=True)
                 for val in df_clean.values.flatten():
                     txt = str(val).strip()
                     if "http" in txt.lower():
                         url = txt[txt.lower().find("http"):].split(' ')[0].split('\n')[0]
-                        st.link_button(f"🚀 Ver en Portal Inmobiliario", url, use_container_width=True, type="primary")
+                        st.link_button("🌐 Acceder a Publicación Original", url, use_container_width=True)
             else:
-                st.info("No hay datos cargados.")
+                st.error("No se han detectado registros válidos en la hoja de Excel.")
 
-        with c2:
-            st.subheader("Galería")
+        with col_gallery:
+            st.subheader("Documentación Visual")
             img_path = f"images/{foto_id}.png"
             if os.path.exists(img_path):
-                st.image(img_path, use_container_width=True)
+                st.image(img_path, use_container_width=True, caption=f"ID: {foto_id}")
             else:
-                st.warning(f"Imagen pendiente: {img_path}")
+                st.info("Fotografía técnica no disponible.")
 
 else:
-    st.error("Archivo Excel no detectado.")
+    st.error("Error de Sistema: El archivo de origen (Excel) no es accesible.")
