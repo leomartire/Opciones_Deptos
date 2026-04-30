@@ -34,19 +34,33 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. CAPA DE DATOS (Nube)
+
+# 3. CAPA DE DATOS
 @st.cache_data(ttl=0)
 def cargar_datos():
     try:
-        # Lee todas las pestañas del Google Sheet definido en Secrets
         return conn.read()
     except Exception as e:
         st.error(f"Error al conectar con Google Sheets: {e}")
         return None
-        
+
 diccionario_hojas = cargar_datos()
 
-# 4. LÓGICA DE NAVEGACIÓN
+# 4. LÓGICA DE NAVEGACIÓN (CORREGIDA)
+# Usamos 'is not None' para evitar el ValueError de Pandas
+if diccionario_hojas is not None:
+    # Si la respuesta es un DataFrame único, lo convertimos a dict para que tu código no rompa
+    if isinstance(diccionario_hojas, pd.DataFrame):
+        diccionario_hojas = {"Hoja1": diccionario_hojas}
+    
+    nombres_hojas = list(diccionario_hojas.keys())
+    
+    # --- Resto de tu lógica de navegación ---
+    if "opcion_actual" not in st.session_state:
+        st.session_state.opcion_actual = "HOME"
+
+
+# 5. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
     nombres_hojas = list(diccionario_hojas.keys())
     
