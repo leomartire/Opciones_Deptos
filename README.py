@@ -56,7 +56,7 @@ if diccionario_hojas:
         col_izq_img, col_cnt_img, col_der_img = st.columns([1, 2, 1])
         with col_cnt_img:
             if os.path.exists("images/HOME.png"):
-        st.image("images/HOME.png", use_container_width=True)
+                st.image("images/HOME.png", use_container_width=True)
                 if os.path.exists("images/HOME.png"):
         st.image("images/HOME.png", use_container_width=True)
         
