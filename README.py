@@ -32,6 +32,7 @@ def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
+            # Cargamos como string para no romper los formatos de miles
             return pd.read_excel(archivo, sheet_name=None, dtype=str)
         return None
     except Exception:
@@ -41,7 +42,7 @@ diccionario_hojas = cargar_datos()
 
 # 4. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
-    # Mapeo de pestañas limpio
+    # Mapeo de pestañas (Limpia espacios invisibles)
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
     if "opcion_actual" not in st.session_state:
@@ -60,27 +61,28 @@ if diccionario_hojas:
         
         with col_menu:
             if "HOME" in diccionario_hojas:
-                # 1. Limpieza inicial de la hoja HOME
+                # Tomamos la hoja HOME y quitamos filas vacías
                 df_home = diccionario_hojas["HOME"].dropna(how='all')
                 
-                # 2. ELIMINAR DUPLICADOS: Nos aseguramos de que cada Unidad sea única
-                # Consideramos la primera columna (índice 0)
-                df_home = df_home.drop_duplicates(subset=[df_home.columns[0]])
-                
-                # Encabezados
+                # Encabezados manuales
                 c_head = st.columns([1.5, 1, 2])
                 c_head[0].markdown("<p class='texto-aplicacion'><b>Unidad</b></p>", unsafe_allow_html=True)
                 c_head[1].markdown("<p class='texto-aplicacion'><b>Detalle</b></p>", unsafe_allow_html=True)
                 c_head[2].markdown("<p class='texto-aplicacion'><b>Contacto</b></p>", unsafe_allow_html=True)
                 st.markdown("---")
 
+                # Usamos un set para evitar duplicados visuales sin romper la lógica de filas
+                unidades_vistas = set()
+
                 for index, row in df_home.iterrows():
+                    # Capturamos datos por posición física (A, B, C)
                     val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
                     
-                    # Filtro para evitar filas de encabezado o vacías
-                    if val_unidad == "" or val_unidad.upper() == "UNIDAD":
+                    # Filtro de seguridad: Evitar encabezados, vacíos y duplicados
+                    if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
                         continue
                     
+                    unidades_vistas.add(val_unidad)
                     fila = st.columns([1.5, 1, 2])
                     
                     # Columna A: Unidad
@@ -89,13 +91,14 @@ if diccionario_hojas:
                     # Columna B: Botón
                     with fila[1]:
                         unidad_key = val_unidad.upper()
-                        if unidad_key in hojas_reales and unidad_key != "HOME":
+                        # Si el match falla, te va a decir por qué
+                        if unidad_key in hojas_reales:
                             if st.button("Ver Análisis", key=f"btn_{index}"):
                                 st.session_state.opcion_actual = hojas_reales[unidad_key]
                                 st.rerun()
                         else:
-                            # Debug: Esto te ayudará a ver por qué no encuentra la pestaña
-                            fila[1].markdown(f"<p style='color:red; font-size:10px;'>Pestaña '{val_unidad}' no hallada</p>", unsafe_allow_html=True)
+                            # Mensaje de ayuda si el nombre no coincide con ninguna pestaña
+                            fila[1].markdown(f"<p style='color:red; font-size:10px;'>Pestaña '{val_unidad}' no existe</p>", unsafe_allow_html=True)
                     
                     # Columna C: Contacto
                     val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
