@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+from streamlit_gsheets import GSheetsConnection  # <--- Nueva librería
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(
