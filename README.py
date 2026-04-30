@@ -35,19 +35,18 @@ st.markdown("""
         font-size: 12px !important;
         margin: 0 !important;
         line-height: 1.5;
-        font-weight: bold;
     }
 
     .stButton>button {
         height: 26px !important;
         padding: 0px 5px !important;
-        font-size: 11px !important;
+        font-size: 12px !important;
         min-height: 26px !important;
         width: 100% !important;
     }
 
     .contacto-texto {
-        font-size: 11px !important;
+        font-size: 12px !important;
         color: #555;
         text-align: right;
     }
