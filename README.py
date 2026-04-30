@@ -15,22 +15,22 @@ def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            # Cargamos todo como texto para respetar tus puntos de miles manuales
             dict_hojas = pd.read_excel(archivo, sheet_name=None, dtype=str)
-            # Limpieza de columnas "Unnamed" que ensucian el DataFrame
+            # Limpieza profunda de columnas sin nombre o fantasma
             for nombre in dict_hojas:
-                dict_hojas[nombre] = dict_hojas[nombre].loc[:, ~dict_hojas[nombre].columns.str.contains('^Unnamed')]
+                df = dict_hojas[nombre]
+                dict_hojas[nombre] = df.loc[:, ~df.columns.str.contains('^Unnamed')]
             return dict_hojas
         return None
     except Exception as e:
-        st.error(f"Error al cargar el archivo: {e}")
+        st.error(f"Error técnico en el archivo: {e}")
         return None
 
 diccionario_hojas = cargar_datos()
 
 # 3. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
-    # Diccionario normalizado para evitar errores por espacios o mayúsculas en los nombres de las hojas
+    # Mapeo de hojas reales para evitar errores de case-sensitive o espacios
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
     if "opcion_actual" not in st.session_state:
@@ -48,49 +48,46 @@ if diccionario_hojas:
         with col_menu:
             st.markdown("### Panel de Control de Unidades")
             
-            if "HOME" in diccionario_hojas:
-                df_home = diccionario_hojas["HOME"].dropna(how='all')
-                
-                # Definimos anchos: Unidad (A), Detalle (B), Contacto (C)
-                anchos = [1.5, 1, 2]
-                cols_h = st.columns(anchos)
-                cols_h[0].markdown("**Unidad**")
-                cols_h[1].markdown("**Acción**")
-                cols_h[2].markdown("**Contacto**")
-                st.markdown("---")
+            df_home = diccionario_hojas["HOME"].dropna(how='all')
+            
+            # Definimos anchos: [Unidad (A), Detalle (B), Contacto (C)]
+            anchos = [1.5, 1, 2]
+            cols_h = st.columns(anchos)
+            cols_h[0].markdown("**Unidad**")
+            cols_h[1].markdown("**Detalle**")
+            cols_h[2].markdown("**Contacto**")
+            st.markdown("---")
 
-                # Recorremos las filas con mapeo físico estricto
-                for index, row in df_home.iterrows():
-                    # Validamos que la celda de la Unidad (Columna A) no esté vacía
-                    if pd.isna(row.iloc[0]) or str(row.iloc[0]).strip() == "":
-                        continue
-                        
-                    cols_f = st.columns(anchos)
-                    
-                    # DATA MAPPING
-                    nombre_unidad_raw = str(row.iloc[0]).strip()
+            for index, row in df_home.iterrows():
+                # Validación de datos: Si la columna A está vacía, saltamos la fila
+                if pd.isna(row.iloc[0]) or str(row.iloc[0]).strip() == "":
+                    continue
+                
+                cols_f = st.columns(anchos)
+                
+                # DATA MAPPING ESTRICTO
+                nombre_unidad_raw = str(row.iloc[0]).strip() # Columna A
+                # El botón se genera con la lógica de la Columna B
+                # La info de contacto se toma de la Columna C (índice 2)
+                info_contacto = row.iloc[2] if len(row) > 2 else "-"
+                
+                # Mostrar Nombre Unidad
+                cols_f[0].write(f"**{nombre_unidad_raw}**")
+                
+                # Mostrar Botón de Navegación
+                with cols_f[1]:
                     nombre_norm = nombre_unidad_raw.upper()
-                    
-                    # Columna A: Unidad
-                    cols_f[0].write(f"**{nombre_unidad_raw}**")
-                    
-                    # Columna B: Botón de Detalle
-                    with cols_f[1]:
-                        if nombre_norm in hojas_reales and nombre_norm != "HOME":
-                            # Usamos el índice para garantizar una clave única por botón
-                            if st.button("Ver Ficha", key=f"btn_{index}", use_container_width=True):
-                                st.session_state.opcion_actual = hojas_reales[nombre_norm]
-                                st.rerun()
-                        else:
-                            cols_f[1].write("---")
-                    
-                    # Columna C: Contacto (índice 2)
-                    info_contacto = row.iloc[2] if len(row) > 2 else "-"
-                    cols_f[2].write(info_contacto if pd.notnull(info_contacto) else "-")
-                    
-                    st.markdown("<hr style='margin: 2px 0;'>", unsafe_allow_html=True)
-            else:
-                st.error("No se encontró la pestaña 'HOME' en el archivo Excel.")
+                    if nombre_norm in hojas_reales and nombre_norm != "HOME":
+                        if st.button("Ver Ficha", key=f"nav_{index}", use_container_width=True):
+                            st.session_state.opcion_actual = hojas_reales[nombre_norm]
+                            st.rerun()
+                    else:
+                        cols_f[1].write("---")
+                
+                # Mostrar Contacto
+                cols_f[2].write(info_contacto if pd.notnull(info_contacto) else "-")
+                
+                st.markdown("<hr style='margin: 2px 0;'>", unsafe_allow_html=True)
 
     # --- VISTA DE DETALLE ---
     else:
@@ -103,8 +100,7 @@ if diccionario_hojas:
         
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0).dropna(how='all', axis=1)
-            
-            # Mostramos la tabla técnica. Al ser 'st.table', respeta tus puntos de miles de Excel.
+            # st.table es fundamental para que tus puntos de miles se vean exactos
             st.table(df_ficha)
             
             ruta_img = f"images/{opcion}.png"
@@ -112,4 +108,4 @@ if diccionario_hojas:
                 st.markdown("---")
                 st.image(ruta_img, width=500)
 else:
-    st.error("Error crítico: No se pudo procesar el archivo 'Opciones_Deptos_LM.xlsx'.")
+    st.error("Archivo 'Opciones_Deptos_LM.xlsx' no detectado.")
