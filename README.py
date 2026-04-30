@@ -152,7 +152,7 @@ if diccionario_hojas:
                     st.warning("No se encontraron registros técnicos válidos en esta hoja.")
 
             with col_gallery:
-                st.subheader("Documentación")
+                
                 # Intentamos cargar la imagen correspondiente a la hoja o unidad
                 img_path = f"images/{hoja_actual}.png"
                 if os.path.exists(img_path):
