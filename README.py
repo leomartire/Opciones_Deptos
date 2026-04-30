@@ -113,30 +113,38 @@ if diccionario_hojas:
                 st.subheader("Ficha Técnica")
                 
                 if not df_clean.empty:
-                    # 1. Formateo numérico y limpieza de "None" / "HOME"
-                    df_viz = df_clean.map(
+                    # 1. Creamos una copia para visualizar
+                    df_viz = df_clean.copy()
+
+                    # 2. Formateo numérico y limpieza de celdas "None" / "HOME"
+                    df_viz = df_viz.map(
                         lambda x: "{:,.0f}".format(x).replace(",", ".") 
                         if isinstance(x, (int, float)) and not pd.isna(x) 
                         else ("" if (pd.isna(x) or str(x).strip() == "HOME") else x)
                     )
                     
-                    # 2. Limpieza de encabezados "Unnamed"
-                    df_viz.columns = ["" if "Unnamed" in str(col) else col for col in df_viz.columns]
+                    # 3. Limpieza de encabezados "Unnamed"
+                    # Usamos un espacio en blanco único para cada columna "Unnamed" para evitar duplicados
+                    nuevos_columnas = []
+                    for i, col in enumerate(df_viz.columns):
+                        if "Unnamed" in str(col):
+                            nuevos_columnas.append(f" " * (i + 1)) # Espacios únicos
+                        else:
+                            nuevos_columnas.append(col)
+                    df_viz.columns = nuevos_columnas
                     
-                    # 3. Renderizar tabla estática (sin ordenamiento)
+                    # 4. Renderizar tabla con configuración de seguridad
                     st.dataframe(
                         df_viz, 
                         use_container_width=True, 
-                        hide_index=True,
-                        column_config={col: st.column_config.Column(disabled=True) for col in df_viz.columns}
+                        hide_index=True
                     )
                     
-                    # 4. Generación de botones para links (URLs originales)
+                    # 5. Generación de botones para links
                     st.markdown('<div style="height: 10px;"></div>', unsafe_allow_html=True)
                     for val in df_clean.values.flatten():
                         txt = str(val).strip()
                         if "http" in txt.lower():
-                            # Extraer la URL limpia
                             start = txt.lower().find("http")
                             url = txt[start:].split()[0].split('\n')[0]
                             st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
