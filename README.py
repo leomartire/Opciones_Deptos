@@ -61,10 +61,23 @@ if diccionario_hojas is not None:
         with col1:
             st.subheader("Ficha Técnica")
             if not df_clean.empty:
-                st.dataframe(df_clean.astype(str), use_container_width=True, hide_index=True)
-                st.divider()
-                st.write("🔗 **Accesos Directos:**")
+                # --- LÓGICA DE FORMATEO DE NÚMEROS ---
+                def formatear_miles(valor):
+                    # Verificamos si es un número (entero o decimal)
+                    if isinstance(valor, (int, float)):
+                        # Formato con punto para miles y sin decimales
+                        return "{:,.0f}".format(valor).replace(",", ".")
+                    return valor
 
+                # Aplicamos el formato a todo el DataFrame
+                df_formateado = df_clean.applymap(formatear_miles)
+                
+                # Mostramos la tabla limpia
+                st.dataframe(df_formateado, use_container_width=True, hide_index=True)
+                
+                st.divider()
+                st.write("🔗 **Accesos Directos:**")   
+         
                 # LÓGICA DE BOTONES (Dentro de col1)
                 links_encontrados = []
                 for col in df_clean.columns:
