@@ -108,15 +108,16 @@ if diccionario_hojas:
                 st.subheader("Ficha Técnica")
                 
                 if not df_clean.empty:
-                    # Aplicamos el formato de miles y decimales solo a números
-                    # Se corrigieron los paréntesis para evitar el SyntaxError
+                    # Formateo mejorado: 
+                    # 1. Si es número, le pone puntos de miles.
+                    # 2. Si es nulo (None/NaN), pone un espacio vacío.
+                    # 3. Si es texto, lo deja como está.
                     df_viz = df_clean.map(
                         lambda x: "{:,.0f}".format(x).replace(",", ".") 
                         if isinstance(x, (int, float)) and not pd.isna(x) 
-                        else x
+                        else ("" if pd.isna(x) else x)
                     )
-                    
-                    # Mostramos la tabla
+    
                     st.dataframe(df_viz, use_container_width=True, hide_index=True)
                     
                     # Buscamos y mostramos botones de links si existen en el Excel
