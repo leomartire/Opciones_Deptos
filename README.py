@@ -48,12 +48,6 @@ diccionario_hojas = cargar_datos()
 if diccionario_hojas:
     nombres_hojas = list(diccionario_hojas.keys())
     
-    # Sidebar reducido para otros controles si fuera necesario
-    with st.sidebar:
-        st.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=40)
-        st.markdown("### PANEL DE CONTROL")
-        st.info("Seleccione una unidad en el menú principal para analizar detalles.")
-
     # --- CONTENIDO DINÁMICO ---
     
     # Definimos la opción actual. Por defecto empezamos en HOME si existe.
@@ -61,7 +55,6 @@ if diccionario_hojas:
         st.session_state.opcion_actual = "HOME"
 
     if st.session_state.opcion_actual == "HOME":
-        st.title("Inversiones Inmobiliarias")
         st.markdown("---")
         
         # --- COLUMNAS PARA INVERTIR IMAGEN Y MENÚ ---
