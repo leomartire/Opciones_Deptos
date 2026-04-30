@@ -38,8 +38,7 @@ def cargar_datos():
 
 diccionario_hojas = cargar_datos()
 
-df = diccionario_hojas[opcion]
-    
+df = diccionario_hojas[opcion]    
     # Limpieza inicial: quitamos filas y columnas totalmente vacías
     if df is not None:
         df_clean = df.dropna(how='all').dropna(axis=1, how='all')
