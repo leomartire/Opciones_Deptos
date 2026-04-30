@@ -76,11 +76,11 @@ if diccionario_hojas:
 
     # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        # Logo Centrado (320px)
+        # Logo Centrado (500px)
         if os.path.exists("images/HOME.png"):
             col_izq, col_logo, col_der = st.columns([1, 4, 1])
             with col_logo:
-                st.image("images/HOME.png", width=320)
+                st.image("images/HOME.png", width=500)
         if "HOME" in diccionario_hojas:
             df_home = diccionario_hojas["HOME"]
             unidades_vistas = set()
