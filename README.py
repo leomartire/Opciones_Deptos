@@ -38,80 +38,55 @@ def cargar_datos():
 
 diccionario_hojas = cargar_datos()
 
-if diccionario_hojas is None:
-    st.error("No se pudo encontrar el archivo Opciones_Deptos_LM.xlsx. Revisa el nombre en GitHub.")
-else:
-    # --- NAVEGACIÓN (SIDEBAR) ---
-    st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=60)
-    st.sidebar.title("Inversiones Inmobiliarias")
+df = diccionario_hojas[opcion]
     
-    nombres_hojas = list(diccionario_hojas.keys())
-    opcion = st.sidebar.radio("Selecciona una opción:", nombres_hojas)
-
-    # Obtenemos el dataframe de la opción elegida
-    df = diccionario_hojas[opcion]
-    df = df.dropna(how='all').dropna(axis=1, how='all')
-
-    # --- LÓGICA DE VISUALIZACIÓN ---
-    
-    if opcion == "HOME":
-        
-        # Imagen de portada si existe
-        ruta_home = "images/HOME.png"
-        if os.path.exists(ruta_home):
-            st.image(ruta_home, width=300)
-        
-        st.write("En este sitio puedes comparar las diferentes opciones que estamos evaluando. "
-                 "Usa el menú de la izquierda para ver los detalles, fotos y links de cada propiedad.")
-
-        st.divider()
-
-        # Tabla general
-        st.subheader("📋 Lista Comparativa")
-        st.dataframe(df, use_container_width=True, hide_index=True)
-
-        
+    # Limpieza inicial: quitamos filas y columnas totalmente vacías
+    if df is not None:
+        df_clean = df.dropna(how='all').dropna(axis=1, how='all')
     else:
-        # --- DISEÑO PANTALLA DEPARTAMENTO ---
-        st.title(f"📍 {opcion}")
+        df_clean = pd.DataFrame() # Creamos un dataframe vacío para que no explote
+
+    # --- CUERPO PRINCIPAL ---
+    st.title(f"📍 {opcion}")
+    
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        st.subheader("Ficha Técnica")
         
-        col1, col2 = st.columns([1, 1])
-
-        with col1:
-            st.subheader("Ficha Técnica")
-            
-            # Verificamos que df_clean tenga contenido para evitar el error .copy()
-            if df_clean is not None and not df_clean.empty:
-                # 1. Creamos la visualización segura
+        # VALIDACIÓN CRÍTICA: ¿Tiene datos el dataframe?
+        if not df_clean.empty:
+            try:
+                # Convertimos todo a texto de forma segura para la tabla
                 df_mostrar = df_clean.astype(str)
-                
-                # Mostramos la tabla sin los números de la izquierda
+                # Mostramos usando dataframe que es más estable con el índice
                 st.dataframe(df_mostrar, use_container_width=True, hide_index=True)
-
-                st.divider()
-                st.write("🔗 **Accesos Directos:**")
-
-                # 2. Búsqueda de links mejorada
-                links_encontrados = []
-                for fila in df_clean.values:
-                    for celda in fila:
-                        celda_str = str(celda).strip()
-                        if "http" in celda_str:
-                            # Extraemos el link por si hay texto extra en la celda
-                            inicio = celda_str.find("http")
-                            link_limpio = celda_str[inicio:].split(" ")[0].split("\n")[0]
-                            links_encontrados.append(link_limpio)
-                
-                if links_encontrados:
-                    # Usamos set() para no repetir botones si el link está duplicado
-                    for url in sorted(list(set(links_encontrados))):
-                        st.link_button("🚀 Ver Publicación Original", url, use_container_width=True, type="primary")
-                else:
-                    st.info("No se detectaron links en esta pestaña.")
+            except Exception as e:
+                st.error(f"Error al mostrar la tabla: {e}")
             
-            else:
-                st.warning("Esta pestaña del Excel parece estar vacía.")
+            st.divider()
+            st.write("🔗 **Accesos Directos:**")
 
+            # Búsqueda de links (Botones)
+            links_encontrados = []
+            for fila in df_clean.values:
+                for celda in fila:
+                    celda_str = str(celda).strip()
+                    if "http" in celda_str.lower():
+                        # Extraer link limpio
+                        inicio = celda_str.find("http")
+                        link_limpio = celda_str[inicio:].split(" ")[0].split("\n")[0]
+                        links_encontrados.append(link_limpio)
+            
+            if links_encontrados:
+                # Eliminar duplicados y crear botones
+                for url in sorted(list(set(links_encontrados))):
+                    st.link_button("🚀 Ver Publicación Original", url, use_container_width=True, type="primary")
+            else:
+                st.info("No se detectaron links en esta pestaña.")
+        else:
+            st.warning("La pestaña seleccionada no tiene datos válidos o está vacía.")
+            
         with col2:
             st.subheader("Galería")
             # El código busca en la carpeta 'fotos' con extensión .jpg
