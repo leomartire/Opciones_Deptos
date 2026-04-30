@@ -75,37 +75,49 @@ if diccionario_hojas:
         st.session_state.opcion_actual = "HOME"
 
    # --- VISTA HOME ---
-        if st.session_state.opcion_actual == "HOME":
-            st.markdown("<div class='main-container'>", unsafe_allow_html=True)
-            
-            # ... (Código de imagen y título) ...
+    if st.session_state.opcion_actual == "HOME":
+        # Usamos el contenedor para achicar el ancho (controlado por el CSS de 450px)
+        st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+        
+        # ... (Código de imagen y título) ...
 
-            if "HOME" in diccionario_hojas:
-                # Encabezados con los nuevos pesos
-                c_head = st.columns([1.1, 0.7, 1.2], gap="small") # <--- Pesos más parejos
-                c_head[0].markdown("<b>Unidad</b>", unsafe_allow_html=True)
-                c_head[1].markdown("<center><b>Acción</b></center>", unsafe_allow_html=True)
-                c_head[2].markdown("<div style='text-align:right'><b>Contacto</b></div>", unsafe_allow_html=True)
-                
-                st.markdown("---")
+        if "HOME" in diccionario_hojas:
+            df_home = diccionario_hojas["HOME"]
+            unidades_vistas = set()
 
+            # Encabezado compacto
+            c_head = st.columns([1, 0.7, 1.3], gap="small")
+            c_head[0].markdown("<b>Unidad</b>", unsafe_allow_html=True)
+            c_head[1].markdown("<center><b>Acción</b></center>", unsafe_allow_html=True)
+            c_head[2].markdown("<div style='text-align:right'><b>Contacto</b></div>", unsafe_allow_html=True)
+            st.markdown("---")
+
+            # VALIDACIÓN: Solo iteramos si df_home no es None
+            if df_home is not None:
                 for index, row in df_home.iterrows():
-                    # ... (Lógica de filtrado) ...
-
-                    # FILA CON LOS MISMOS PESOS [1.1, 0.7, 1.2]
-                    fila = st.columns([1.1, 0.7, 1.2], gap="small")
+                    # Usamos .get() o validamos longitud para evitar errores de índice
+                    val_unidad = str(row[0]).strip() if pd.notnull(row[0]) else ""
                     
+                    if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
+                        continue
+                    
+                    unidades_vistas.add(val_unidad)
+                    
+                    # FILA ESTRECHA
+                    fila = st.columns([1, 0.7, 1.3], gap="small")
                     with fila[0]:
                         st.markdown(f"<b>{val_unidad}</b>", unsafe_allow_html=True)
-                    
                     with fila[1]:
                         if st.button("Ver", key=f"btn_{index}"):
-                            st.session_state.opcion_actual = hojas_reales[val_unidad.upper()]
+                            st.session_state.opcion_actual = hojas_reales.get(val_unidad.upper(), "HOME")
                             st.rerun()
-                            
                     with fila[2]:
-                        val_contacto = str(row.iloc[2]).strip() if len(row) > 2 else "-"
+                        val_contacto = str(row[2]).strip() if len(row) > 2 and pd.notnull(row[2]) else "-"
                         st.markdown(f"<div style='text-align:right'>{val_contacto}</div>", unsafe_allow_html=True)
+                    
+                    st.markdown("<hr style='margin:1px 0; opacity:0.1;'>", unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
     # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
