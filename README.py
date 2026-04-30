@@ -131,7 +131,6 @@ if diccionario_hojas:
                     st.warning(f"La hoja '{nombre_hoja_datos}' está vacía en el archivo Excel.")
             
             with col_gallery:
-                st.subheader("Documentación")
                 # Intentamos cargar la imagen con el nombre de la opción o del aviso
                 img_path = f"images/{nombre_hoja_datos}.png"
                 if os.path.exists(img_path):
