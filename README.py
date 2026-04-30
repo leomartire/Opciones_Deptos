@@ -9,22 +9,14 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. CARGA DE DATOS
+# 2. CARGA DE DATOS (Sin filtros raros, directo del Excel)
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            # Leemos como texto para mantener tus puntos de miles manuales
-            dict_hojas = pd.read_excel(archivo, sheet_name=None, dtype=str)
-            
-            # Limpiamos cada hoja de las columnas "Unnamed"
-            for nombre in dict_hojas:
-                df = dict_hojas[nombre]
-                # Filtramos para quedarnos solo con columnas que NO empiecen con "Unnamed"
-                dict_hojas[nombre] = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-            
-            return dict_hojas
+            # Leemos como texto para que respete tus puntos de miles manuales
+            return pd.read_excel(archivo, sheet_name=None, dtype=str)
         return None
     except Exception:
         return None
@@ -50,17 +42,20 @@ if diccionario_hojas:
         with col_menu:
             st.markdown("### Panel de Control de Unidades")
             
+            # Mostramos la hoja HOME tal cual, eliminando solo si aparece la columna Unnamed de índice
             df_home = diccionario_hojas["HOME"]
-            # Limpiamos filas vacías que puedan haber quedado en el Excel
-            df_home = df_home.dropna(how='all')
+            if "Unnamed: 0" in df_home.columns:
+                df_home = df_home.drop(columns=["Unnamed: 0"])
             
+            # Mostramos tu tabla de contactos/unidades
             st.table(df_home)
             
-            st.markdown("#### Acceder al Análisis Detallado:")
+            st.markdown("#### Seleccionar Unidad para Detalle:")
+            # Botones para navegar a las otras pestañas
             for unidad in nombres_hojas:
                 if unidad == "HOME":
                     continue
-                if st.button(f"🔍 Ver Ficha Técnica: {unidad}", use_container_width=True):
+                if st.button(f"🔍 Ficha: {unidad}", use_container_width=True):
                     st.session_state.opcion_actual = unidad
                     st.rerun()
 
@@ -75,18 +70,16 @@ if diccionario_hojas:
         
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion]
-            # Limpiamos filas y columnas totalmente vacías
-            df_display = df_ficha.dropna(how='all', axis=0).dropna(how='all', axis=1)
             
-            st.dataframe(
-                df_display, 
-                use_container_width=True, 
-                hide_index=True
-            )
+            # Quitamos la columna molesta si existe
+            if "Unnamed: 0" in df_ficha.columns:
+                df_ficha = df_ficha.drop(columns=["Unnamed: 0"])
+            
+            st.dataframe(df_ficha, use_container_width=True, hide_index=True)
             
             ruta_img = f"images/{opcion}.png"
             if os.path.exists(ruta_img):
                 st.markdown("---")
                 st.image(ruta_img, width=500)
 else:
-    st.error("No se pudo cargar el archivo 'Opciones_Deptos_LM.xlsx'.")
+    st.error("No se encontró el archivo Excel.")
