@@ -33,16 +33,18 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # 2. CAPA DE DATOS
-@st.cache_data
+@st.cache_data(ttl=0)
 def cargar_datos():
-    archivo = "Opciones_Deptos_LM.xlsx"
     try:
-        if os.path.exists(archivo):
-            return pd.read_excel(archivo, sheet_name=None)
+        # La conexión 'conn' debe estar definida arriba de esta función
+        # conn = st.connection("gsheets", type=GSheetsConnection)
+        
+        # Lee todas las pestañas del Google Sheet definido en Secrets
+        return conn.read()
+    except Exception as e:
+        st.error(f"Error al conectar con Google Sheets: {e}")
         return None
-    except Exception:
-        return None
-
+        
 diccionario_hojas = cargar_datos()
 
 # 3. LÓGICA DE NAVEGACIÓN
