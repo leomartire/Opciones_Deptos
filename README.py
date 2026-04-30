@@ -71,8 +71,6 @@ if diccionario_hojas:
         with c_img2:
             if os.path.exists("images/HOME.png"):
                 st.image("images/HOME.png", use_container_width=True)
-        
-        st.markdown("<h3 style='text-align: center; font-size: 18px; margin-top: 0;'>Panel de Control</h3>", unsafe_allow_html=True)
 
         if "HOME" in diccionario_hojas:
             df_home = diccionario_hojas["HOME"]
