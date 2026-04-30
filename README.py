@@ -3,6 +3,11 @@ import pandas as pd
 import os
 from streamlit_gsheets import GSheetsConnection  # <--- Nueva librería
 
+# Esto imprimirá en la pantalla de la app los nombres de las pestañas encontradas
+if st.checkbox("Depurar conexión"):
+    todas_las_hojas = conn.read(ttl=0).keys()
+    st.write("Pestañas en el Drive:", list(todas_las_hojas))
+    
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(
     page_title="Gestión de Inversiones Inmobiliarias", 
