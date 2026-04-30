@@ -80,7 +80,35 @@ if diccionario_hojas:
             df = diccionario_hojas[opcion]
             df_clean = df.dropna(how='all').dropna(axis=1, how='all')
             st.subheader("Ficha Técnica")
-            st.dataframe(df_clean, use_container_width=True, hide_index=True)
+           if vista == "FICHA":
+            st.subheader(f"Análisis Técnico: {opcion}")
+            
+            # 1. Recuperamos la hoja del diccionario
+            df = diccionario_hojas[opcion]
+            
+            # 2. Limpiamos filas y columnas vacías
+            df_clean = df.dropna(how='all', axis=0).dropna(how='all', axis=1)
+
+            # --- 3. CONFIGURACIÓN DE FORMATO (AQUÍ VA EL CAMBIO) ---
+            # Identificamos las columnas que son números (Precios, m2, etc.)
+            cols_numericas = df_clean.select_dtypes(include=['number']).columns
+            
+            st.dataframe(
+                df_clean, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config={
+                    col: st.column_config.NumberColumn(
+                        format="%d",  # %d es para números enteros con separador de miles
+                    ) for col in cols_numericas
+                }
+            )
+            # -------------------------------------------------------
+            
+            # Galería debajo de la ficha
+            ruta_img = f"images/{opcion}.png"
+            if os.path.exists(ruta_img):
+                st.image(ruta_img, use_container_width=True)
 
         with col_gallery:
             st.subheader("Galería")
