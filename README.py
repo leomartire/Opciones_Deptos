@@ -9,37 +9,35 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. ESTILO CSS (Ajuste fino para imagen y tabla)
+# 2. ESTILO CSS "FORCE" (Ancho fijo y prolijo)
 st.markdown("""
     <style>
-    /* Centrado para PC */
-    @media (min-width: 1024px) {
-        .main-app-container {
-            max-width: 450px;
-            margin: 0 auto;
-        }
+    /* LIMITADOR MAESTRO: Nada puede medir más de 350px */
+    .stApp {
+        max-width: 350px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Eliminar paddings excesivos */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
     }
 
-    /* EVITAR APILAMIENTO SOLO EN LA TABLA */
-    /* Usamos un selector más específico para no afectar a la imagen */
-    .row-tabla [data-testid="column"] {
+    /* FORZAR COLUMNAS EN MÓVIL (No se apilan) */
+    [data-testid="column"] {
         flex: 1 1 0% !important;
         min-width: 0px !important;
     }
 
-    /* Ajuste de imagen para que no se corte */
+    /* Imagen prolija */
     [data-testid="stImage"] img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    .stButton>button {
-        height: 26px !important;
-        padding: 0px !important;
-        font-size: 11px !important;
         width: 100% !important;
+        height: auto !important;
     }
 
+    /* Textos y botones miniatura */
     .tabla-texto {
         font-size: 11px !important;
         margin: 0 !important;
@@ -47,8 +45,15 @@ st.markdown("""
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
-    hr { margin: 8px 0 !important; opacity: 0.2; }
+
+    .stButton>button {
+        height: 22px !important;
+        font-size: 10px !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    hr { margin: 6px 0 !important; opacity: 0.2; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -67,28 +72,23 @@ if diccionario_hojas:
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-    # Envolvemos todo en un div para el control de ancho en PC
-    st.markdown('<div class="main-app-container">', unsafe_allow_html=True)
-
     # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        # Imagen Home (Sin columnas para que no se corte)
+        # Imagen Home (Limitada por el ancho de 350px del CSS)
         if os.path.exists("images/HOME.png"):
-            st.image("images/HOME.png", use_container_width=True)
+            st.image("images/HOME.png")
         
-        st.markdown("<h3 style='text-align: center; font-size: 18px;'>Panel de Control</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; font-size: 15px; margin: 5px 0;'>Panel de Control</h3>", unsafe_allow_html=True)
 
         if "HOME" in diccionario_hojas:
             df_home = diccionario_hojas["HOME"]
             unidades_vistas = set()
 
-            # Encabezado con clase específica para el CSS
-            st.markdown('<div class="row-tabla">', unsafe_allow_html=True)
-            h = st.columns([1, 0.8, 1.2])
-            h[0].write("**Unidad**")
-            h[1].write("**Acción**")
-            h[2].markdown("<div style='text-align:right'>**Contacto**</div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            # Encabezado (Columnas fijas)
+            c_h = st.columns([1, 0.7, 1.2])
+            c_h[0].write("**Unidad**")
+            c_h[1].write("**Ver**")
+            c_h[2].markdown("<div style='text-align:right'>**Contacto**</div>", unsafe_allow_html=True)
             st.markdown("---")
 
             if df_home is not None:
@@ -98,39 +98,36 @@ if diccionario_hojas:
                         continue
                     unidades_vistas.add(val_unidad)
                     
-                    # FILA con clase para evitar el apilamiento
-                    st.markdown('<div class="row-tabla">', unsafe_allow_html=True)
-                    fila = st.columns([1, 0.8, 1.2])
+                    # Fila (No se apila)
+                    fila = st.columns([1, 0.7, 1.2])
                     
                     with fila[0]:
                         st.markdown(f"<p class='tabla-texto'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
                     
                     with fila[1]:
-                        if st.button("Ver", key=f"btn_{index}"):
+                        if st.button("Ir", key=f"btn_{index}"):
                             st.session_state.opcion_actual = hojas_reales.get(val_unidad.upper(), "HOME")
                             st.rerun()
                     
                     with fila[2]:
-                        val_contacto = str(row[2]).strip() if len(row) > 2 and pd.notnull(row[2]) else "-"
-                        st.markdown(f"<p class='tabla-texto' style='text-align:right'>{val_contacto}</p>", unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                        val_cont = str(row[2]).strip() if len(row) > 2 and pd.notnull(row[2]) else "-"
+                        st.markdown(f"<p class='tabla-texto' style='text-align:right'>{val_cont}</p>", unsafe_allow_html=True)
+                    
                     st.markdown("<hr>", unsafe_allow_html=True)
 
     # --- VISTA DE DETALLE ---
     else:
-        opcion = st.session_state.opcion_actual
         if st.button("← Volver"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
         
+        opcion = st.session_state.opcion_actual
         st.subheader(f"Ficha: {opcion}")
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0)
             st.table(df_ficha)
             ruta_img = f"images/{opcion}.png"
             if os.path.exists(ruta_img):
-                st.image(ruta_img, use_container_width=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True) # Cierre de main-app-container
+                st.image(ruta_img)
 else:
-    st.error("Error al cargar Excel.")
+    st.error("Error en archivo Excel.")
