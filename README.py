@@ -74,7 +74,7 @@ if diccionario_hojas:
                 df = diccionario_hojas[opcion]
                 df_clean = df.dropna(how='all', axis=0).dropna(how='all', axis=1)
 
-                # FORMATO DE MILES Y SIN DECIMALES
+                # Formato de miles y sin decimales
                 cols_numericas = df_clean.select_dtypes(include=['number']).columns
                 st.dataframe(
                     df_clean, 
@@ -85,10 +85,13 @@ if diccionario_hojas:
                     }
                 )
                 
+                # --- AJUSTE DE TAMAÑO DE IMAGEN ---
                 ruta_img = f"images/{opcion}.png"
                 if os.path.exists(ruta_img):
-                    st.image(ruta_img, use_container_width=True)
-        
+                    # Quitamos el 'use_container_width' y definimos un ancho fijo
+                    st.image(ruta_img, width=500) 
+            else:
+                st.error("Hoja no encontrada.")        
         else: # Vista CONTACTO
             st.subheader(f"Datos de Contacto: {opcion}")
             if "Contacto" in diccionario_hojas:
