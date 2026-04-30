@@ -14,15 +14,22 @@ st.markdown("""
     <style>
     html, body, [class*="st-"] { font-size: 12px !important; }
     .stTable td, .stTable th { font-size: 12px !important; }
+    .stMarkdown p {
+        margin-bottom: 0px !important;
+        line-height: 1.2 !important;
+        font-size: 11px !important;
+    }    
     .stButton>button {
-        width: 100%;
-        border-radius: 5px;
-        height: 2.2em;
-        background-color: #f0f2f6;
-        font-size: 12px !important;
+        height: 1.5em !important;
+        padding: 0px 5px !important;
+        font-size: 10px !important;
+        min-height: 20px !important;
     }
-    hr { margin-top: 0.4rem; margin-bottom: 0.4rem; opacity: 0.3; }
-    .texto-aplicacion { font-size: 12px !important; margin-bottom: 0px; }
+    hr { 
+        margin-top: 2px !important; 
+        margin-bottom: 2px !important; 
+        opacity: 0.2; 
+    }
     </style>
     """, unsafe_allow_html=True)
 
