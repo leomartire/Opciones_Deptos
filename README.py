@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
 import os
-from streamlit_gsheets import GSheetsConnection  # <--- Nueva librería
+from streamlit_gsheets import GSheetsConnection
+
+# Inicializar la conexión (Fuera de cualquier función)
+conn = st.connection("gsheets", type=GSheetsConnection)
     
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(
