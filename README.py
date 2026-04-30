@@ -61,7 +61,6 @@ if diccionario_hojas:
 
     # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        st.markdown("## Panel de Control de Inversiones")
         st.markdown("---")
         
         col_img, col_menu = st.columns([0.6, 1.4], gap="large")
@@ -134,6 +133,6 @@ if diccionario_hojas:
             ruta_img = f"images/{opcion}.png"
             if os.path.exists(ruta_img):
                 st.markdown("---")
-                st.image(ruta_img, width=500)
+                st.image(ruta_img, width=300)
 else:
     st.error("No se detectó el archivo Excel en el repositorio.")
