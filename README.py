@@ -58,7 +58,7 @@ if diccionario_hojas:
         st.markdown("---")
 
         # 2. TABLA CENTRADA (Cambiamos col_menu por este contenedor centrado)
-        col_izq_tab, col_cnt_tab, col_der_tab = st.columns([1, 4, 1])
+        col_izq_tab, col_cnt_tab, col_der_tab = st.columns([2, 2, 2])
         
         with col_cnt_tab:
             if "HOME" in diccionario_hojas:
