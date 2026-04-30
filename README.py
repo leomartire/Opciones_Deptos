@@ -74,14 +74,17 @@ if diccionario_hojas:
                 df = diccionario_hojas[opcion]
                 df_clean = df.dropna(how='all', axis=0).dropna(how='all', axis=1)
 
-                # Formato de miles y sin decimales
+                # FORMATO DE MILES FORZADO Y SIN DECIMALES
                 cols_numericas = df_clean.select_dtypes(include=['number']).columns
                 st.dataframe(
                     df_clean, 
                     use_container_width=True, 
                     hide_index=True,
                     column_config={
-                        col: st.column_config.NumberColumn(format="%d") for col in cols_numericas
+                        col: st.column_config.NumberColumn(
+                            format="%.0f", # Asegura que sea número sin decimales
+                            help="Valor en miles"
+                        ) for col in cols_numericas
                     }
                 )
                 
