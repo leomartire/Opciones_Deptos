@@ -114,4 +114,4 @@ if diccionario_hojas:
         with c1:
             st.subheader("Ficha Técnica")
             if not df_clean.empty:
-                df_viz = df_clean.map(lambda x: "{:,.0f}".format(x).replace(",", ".")
+                df_viz = df_clean.map(lambda x: "{:,.0f}".format(x).replace(",", "."))
