@@ -48,19 +48,24 @@ if diccionario_hojas:
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-    # --- VISTA HOME ---
+   # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        st.markdown("---")
-        
-        col_img, col_menu = st.columns([0.6, 1.4], gap="large")
+        # 1. IMAGEN ARRIBA Y CENTRADA
         col_izq_img, col_cnt_img, col_der_img = st.columns([1, 2, 1])
         with col_cnt_img:
             if os.path.exists("images/HOME.png"):
                 st.image("images/HOME.png", use_container_width=True)
-                if os.path.exists("images/HOME.png"):
-        with col_menu:
+
+        st.markdown("## Panel de Control de Inversiones")
+        st.markdown("---")
+
+        # 2. TABLA CENTRADA (Cambiamos col_menu por este contenedor centrado)
+        col_izq_tab, col_cnt_tab, col_der_tab = st.columns([1, 4, 1])
+        
+        with col_cnt_tab:
             if "HOME" in diccionario_hojas:
                 df_home = diccionario_hojas["HOME"]
+                # ... aquí sigue el resto de tu código de la tabla ...
                 
                 # Encabezados visuales
                 c_head = st.columns([1.5, 1, 2])
