@@ -25,7 +25,7 @@ st.markdown("""
         justify-content: center;
         align-items: center;
         width: 100%;
-        margin-bottom: 20px;
+        margin-bottom: 50px;
     }
 
     /* Tipografía unificada: Sin negritas, mismo tamaño (12px) */
