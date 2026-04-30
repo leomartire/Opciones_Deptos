@@ -51,16 +51,15 @@ if diccionario_hojas:
    # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
         
-        # 1. CONTENEDOR PRINCIPAL (Para que en móvil ocupe todo el ancho)
-        col_principal = st.columns(1)[0]
+        # 1. CENTRADO GLOBAL (Afecta a imagen y tabla)
+        # Usamos [1, 2, 1] para que el contenido ocupe el 50% central en PC
+        # En móviles, Streamlit adaptará estas proporciones automáticamente
+        col_izq, col_central, col_der = st.columns([1, 2, 1])
         
-        with col_principal:
-            # IMAGEN ARRIBA Y CENTRADA
-            # Creamos sub-columnas solo para la imagen para que no sea gigante
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c2:
-                if os.path.exists("images/HOME.png"):
-                    st.image("images/HOME.png", use_container_width=True)
+        with col_central:
+            # IMAGEN CENTRADA
+            if os.path.exists("images/HOME.png"):
+                st.image("images/HOME.png", use_container_width=True)
             
             st.markdown("## Panel de Control de Inversiones")
             st.markdown("---")
@@ -68,11 +67,10 @@ if diccionario_hojas:
             if "HOME" in diccionario_hojas:
                 df_home = diccionario_hojas["HOME"]
                 
-                # Encabezados de la tabla
-                # Usamos proporciones más ajustadas para que no se desalinee en móvil
-                c_head = st.columns([1.2, 0.8, 1.5], gap="small")
+                # Encabezados de la tabla (ajustados para ser más compactos)
+                c_head = st.columns([1, 0.7, 1.3], gap="small")
                 c_head[0].markdown("<p class='texto-aplicacion'><b>Unidad</b></p>", unsafe_allow_html=True)
-                c_head[1].markdown("<p class='texto-aplicacion'><b>Detalle</b></p>", unsafe_allow_html=True)
+                c_head[1].markdown("<p class='texto-aplicacion'><b>Acción</b></p>", unsafe_allow_html=True)
                 c_head[2].markdown("<p class='texto-aplicacion'><b>Contacto</b></p>", unsafe_allow_html=True)
                 st.markdown("---")
 
@@ -86,23 +84,22 @@ if diccionario_hojas:
                     
                     unidades_vistas.add(val_unidad)
                     
-                    # FILA DE DATOS
-                    fila = st.columns([1.2, 0.8, 1.5], gap="small")
+                    # FILA DE DATOS DENTRO DEL CONTENEDOR CENTRAL
+                    fila = st.columns([1, 0.7, 1.3], gap="small")
                     
                     with fila[0]:
-                        fila[0].markdown(f"<p class='texto-aplicacion'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
+                        st.markdown(f"<p class='texto-aplicacion'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
                     
                     with fila[1]:
                         key_match = val_unidad.upper()
                         if key_match in hojas_reales:
-                            # Texto corto "Ver" para que entre bien en el celular
                             if st.button("Ver", key=f"btn_{index}"):
                                 st.session_state.opcion_actual = hojas_reales[key_match]
                                 st.rerun()
                     
                     with fila[2]:
                         val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
-                        fila[2].markdown(f"<p class='texto-aplicacion'>{val_contacto}</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p class='texto-aplicacion'>{val_contacto}</p>", unsafe_allow_html=True)
                     
                     st.markdown("<hr>", unsafe_allow_html=True)
     # --- VISTA DE DETALLE ---
