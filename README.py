@@ -15,7 +15,7 @@ st.markdown("""
     /* 1. Achicar márgenes superiores */
     .block-container {
         padding-top: 1rem !important;
-        max-width: 450px !important; /* Un poco más de margen para que el logo respire */
+        max-width: 550px !important; /* Un poco más de margen para que el logo respire */
     }
 
     /* 2. LOGO: Tamaño aumentado y centrado */
