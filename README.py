@@ -68,7 +68,7 @@ if diccionario_hojas:
                 st.warning("Imagen 'HOME.png' no encontrada en la carpeta /images")
         
         with col_menu:
-            st.markdown("### Oportunidades")
+            
             # El radio button que controla la navegación
             seleccion = st.radio(
                 "Seleccione Unidad:", 
