@@ -12,6 +12,20 @@ st.set_page_config(
 # 2. ESTILO CSS GLOBAL (Fuente 12px)
 st.markdown("""
     <style>
+    /* Limita el ancho en computadoras pero deja que use todo en celulares */
+    @media (min-width: 1024px) {
+        .main-container {
+            max-width: 600px;
+            margin: 0 auto; /* Esto centra todo el bloque */
+        }
+    }
+    
+    /* Elimina espacios vacíos que Streamlit pone por defecto */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 0rem !important;
+    }
+</style>
     html, body, [class*="st-"] { font-size: 12px !important; }
     .stTable td, .stTable th { font-size: 12px !important; }
     .stMarkdown p {
