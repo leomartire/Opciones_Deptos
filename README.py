@@ -15,9 +15,20 @@ st.markdown("""
     /* 1. Achicar márgenes superiores */
     .block-container {
         padding-top: 1rem !important;
-        max-width: 550px !important; /* Un poco más de margen para que el logo respire */
+        max-width: 550px !important; 
+        margin: 0 auto !important; /* Asegura que el contenedor principal esté centrado en PC */
+    }
+/* Regla específica para centrar la imagen */
+    [data-testid="stImage"] {
+        display: flex;
+        justify-content: center;
     }
 
+    [data-testid="stImage"] img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
     /* 2. LOGO: Tamaño aumentado y centrado */
     .logo-container {
         text-align: center;
