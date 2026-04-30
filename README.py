@@ -38,10 +38,10 @@ st.markdown("""
     }
 
     .stButton>button {
-        height: 26px !important;
+        height: 24px !important;
         padding: 0px 5px !important;
-        font-size: 12px !important;
-        min-height: 26px !important;
+        font-size: 10px !important;
+        min-height: 24px !important;
         width: 100% !important;
     }
 
