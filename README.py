@@ -81,9 +81,6 @@ if diccionario_hojas:
             col_izq, col_logo, col_der = st.columns([1, 4, 1])
             with col_logo:
                 st.image("images/HOME.png", width=320)
-        
-        st.markdown("<p style='text-align: center; font-size: 14px; font-weight: 400; margin-top: 0;'>Panel de Control</p>", unsafe_allow_html=True)
-
         if "HOME" in diccionario_hojas:
             df_home = diccionario_hojas["HOME"]
             unidades_vistas = set()
