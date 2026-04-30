@@ -14,11 +14,8 @@ st.markdown("""
     <style>
     /* Contenedor principal para centrar en PC */
     @media (min-width: 1024px) {
-        .main-container {
-            max-width: 600px;
-            margin: 0 auto;
+        .main-container { max-width: 500px; margin: auto; }
         }
-    }
     
     /* Ajustes de fuente y espaciado general */
     html, body, [class*="st-"] { font-size: 12px !important; }
