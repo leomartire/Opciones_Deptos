@@ -38,14 +38,13 @@ if diccionario_hojas is not None:
 
     # --- PORTADA (HOME) ---
     if opcion == "HOME":
-        st.title("📊 Panel de Oportunidades")
+        st.title("Panel de Oportunidades")
         
         col_img, col_txt = st.columns([1, 2])
         with col_img:
             if os.path.exists("images/home_portada.png"):
                 st.image("images/home_portada.png", use_container_width=True)
         with col_txt:
-            st.markdown("### Bienvenido, Leo.")
             st.write("Seleccioná una propiedad en el menú lateral para ver la ficha técnica completa o usá los accesos directos abajo.")
 
         st.divider()
