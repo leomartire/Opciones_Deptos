@@ -33,12 +33,12 @@ if diccionario_hojas is not None:
     
     # Sidebar
     st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=60)
-    st.sidebar.title("Navegación")
+    st.sidebar.title("Detalle de la Inversión")
     opcion = st.sidebar.radio("Ir a:", nombres_hojas, key="nav_main")
 
     # --- PORTADA (HOME) ---
     if opcion == "HOME":
-        st.title("Panel de Oportunidades")
+        st.title("Panel con publicaciones")
         
         col_img, col_txt = st.columns([1, 2])
         with col_img:
