@@ -112,14 +112,25 @@ if diccionario_hojas:
             with col_main:
                 st.subheader("Ficha Técnica")
                 if not df_clean.empty:
-                    # Formateo numérico y reemplazo de "None" por vacío
+                    # 1. Formateo numérico y limpieza de "None"
                     df_viz = df_clean.map(
                         lambda x: "{:,.0f}".format(x).replace(",", ".") 
                         if isinstance(x, (int, float)) and not pd.isna(x) 
                         else ("" if pd.isna(x) else x)
                     )
                     
-                    st.dataframe(df_viz, use_container_width=True, hide_index=True)
+                    # 2. Quitar "Unnamed" de los nombres de las columnas
+                    # Esto reemplaza cualquier columna que empiece con 'Unnamed' por un espacio vacío
+                    df_viz.columns = ["" if "Unnamed" in str(col) else col for col in df_viz.columns]
+                    
+                    # 3. Renderizar tabla SIN opción de ordenar (column_order=None y uso de st.column_config)
+                    st.dataframe(
+                        df_viz, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        # Desactivamos el ordenamiento mediante la configuración de columnas
+                        column_config={col: st.column_config.Column(disabled=True) for col in df_viz.columns}
+                    )
                     
                     # Generación de botones para links
                     for val in df_clean.values.flatten():
@@ -127,9 +138,6 @@ if diccionario_hojas:
                         if "http" in txt.lower():
                             url = txt[txt.lower().find("http"):].split()[0]
                             st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
-                else:
-                    st.warning("No se encontraron registros técnicos en esta hoja.")
-
             with col_gallery:
                 st.subheader("Documentación")
                 # Buscamos imagen por nombre de hoja o unidad
