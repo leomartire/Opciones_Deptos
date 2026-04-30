@@ -21,7 +21,7 @@ st.markdown("""
         margin-bottom: 15px;
     }
     .logo-img {
-        width: 250px; /* Tamaño más grande para el logo */
+        width: 320px; /* Tamaño más grande para el logo */
         height: auto;
     }
 
