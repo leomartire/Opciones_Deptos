@@ -72,31 +72,31 @@ if diccionario_hojas:
             st.subheader(f"Análisis Técnico: {opcion}")
             if opcion in diccionario_hojas:
                 df = diccionario_hojas[opcion]
-                df_clean = df.dropna(how='all', axis=0).dropna(how='all', axis=1)
+                # Copiamos para no romper el original
+                df_visual = df.dropna(how='all', axis=0).dropna(how='all', axis=1).copy()
 
-                # Identificamos columnas numéricas
-                cols_numericas = df_clean.select_dtypes(include=['number']).columns
-                
-                # Renderizado con configuración de precisión
+                # --- EL TRUCO DEL FORMATO DEFINITIVO ---
+                for col in df_visual.columns:
+                    # Si la columna es numérica, la transformamos a texto con puntos
+                    if pd.api.types.is_numeric_dtype(df_visual[col]):
+                        df_visual[col] = df_visual[col].apply(
+                            lambda x: f"{int(x):,}".replace(",", ".") if pd.notnull(x) else ""
+                        )
+
+                # Mostramos la tabla (ahora son strings alineados)
                 st.dataframe(
-                    df_clean, 
+                    df_visual, 
                     use_container_width=True, 
-                    hide_index=True,
-                    column_config={
-                        col: st.column_config.NumberColumn(
-                            format="%d",     # Fuerza el número entero
-                            step=1           # Evita que aparezcan decimales al editar si fuera el caso
-                        ) for col in cols_numericas
-                    }
+                    hide_index=True
                 )
                 
-                # Imagen con tamaño controlado y centrada
+                # Imagen con tamaño controlado
                 ruta_img = f"images/{opcion}.png"
                 if os.path.exists(ruta_img):
                     st.markdown("---")
-                    st.image(ruta_img, width=200)
+                    st.image(ruta_img, width=500)
             else:
-                st.error("No se encontró la hoja de datos.")  
+                st.error("No se encontró la hoja de datos.")
         else: # Vista CONTACTO
             st.subheader(f"Datos de Contacto: {opcion}")
             if "Contacto" in diccionario_hojas:
