@@ -1,8 +1,13 @@
 import streamlit as st
 import pandas as pd
 import os
-from streamlit_gsheets import GSheetsConnection
+from streamlit_gsheets import GSheetsConnection  # <--- Nueva librería
 
+# Esto imprimirá en la pantalla de la app los nombres de las pestañas encontradas
+if st.checkbox("Depurar conexión"):
+    todas_las_hojas = conn.read(ttl=0).keys()
+    st.write("Pestañas en el Drive:", list(todas_las_hojas))
+    
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(
     page_title="Gestión de Inversiones Inmobiliarias", 
@@ -10,115 +15,159 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. INICIALIZAR CONEXIÓN
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-# --- ESTILOS CSS ---
+# --- ESTILOS CSS PROFESIONALES ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+    
     html, body, [class*="css"], .stMarkdown, p, label, table {
         font-family: 'Inter', sans-serif !important;
         color: #1e293b;
     }
     .stApp { background-color: #fcfcfd; }
-    h1 { font-size: 1.6rem !important; font-weight: 600 !important; color: #0f172a !important; }
+    h1 { font-size: 2.2rem !important; font-weight: 600 !important; color: #0f172a !important; }
+    h2 { font-size: 1.4rem !important; color: #334155 !important; font-weight: 500 !important; }
+    
+    /* Contenedor para el radio button lateral derecho */
+    .stRadio [data-testid="stWidgetLabel"] p {
+        font-weight: 600 !important;
+        color: #64748b !important;
+        text-transform: uppercase;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. CAPA DE DATOS: CARGA DINÁMICA DE PESTAÑAS
-@st.cache_data(ttl=300)
-def obtener_todas_las_unidades():
+# 2. CAPA DE DATOS
+@st.cache_data
+def cargar_datos():
+    archivo = "Opciones_Deptos_LM.xlsx"
     try:
-        # Intentamos obtener los nombres de las hojas directamente de la conexión
-        # Si conn.read() devuelve un dict, sacamos las keys.
-        res = conn.read(ttl=0)
-        if isinstance(res, dict):
-            return list(res.keys())
-        # Si no devuelve un dict, es que solo lee una hoja. 
-        # Forzamos una lista basada en lo que sabemos que existe en tu Drive
-        return ["HOME", "Lafinur 3000", "Tagle 2554", "Acoyte 450", "Pueyrredon 1100"] 
+        if os.path.exists(archivo):
+            return pd.read_excel(archivo, sheet_name=None)
+        return None
     except Exception:
-        return ["HOME", "Lafinur 3000", "Tagle 2554"]
+        return None
 
-nombres_hojas = obtener_todas_las_unidades()
+diccionario_hojas = cargar_datos()
 
-# 4. LÓGICA DE NAVEGACIÓN
-if "opcion_actual" not in st.session_state:
-    st.session_state.opcion_actual = "HOME"
-
-# Sidebar para asegurar que siempre puedes navegar
-with st.sidebar:
-    st.title("Menú de Unidades")
-    seleccion_sidebar = st.selectbox("Ir a:", nombres_hojas, index=nombres_hojas.index(st.session_state.opcion_actual) if st.session_state.opcion_actual in nombres_hojas else 0)
-    if seleccion_sidebar != st.session_state.opcion_actual:
-        st.session_state.opcion_actual = seleccion_sidebar
-        st.rerun()
-
-if st.session_state.opcion_actual == "HOME":
-    st.markdown("---")
-    col_img, col_menu = st.columns([0.6, 1.4], gap="large")
+# 3. LÓGICA DE NAVEGACIÓN
+if diccionario_hojas:
+    nombres_hojas = list(diccionario_hojas.keys())
     
-    with col_img:
-        if os.path.exists("images/HOME.png"):
-            st.image("images/HOME.png", use_container_width=True)
+    # --- CONTENIDO DINÁMICO ---
     
-    with col_menu:
-        st.write("### Bienvenido al Sistema de Gestión")
-        st.write("Selecciona una propiedad desde el menú lateral o utiliza los accesos directos.")
-        # Botones rápidos para las unidades principales
-        for h in [n for n in nombres_hojas if n != "HOME"]:
-            if st.button(f"📂 Analizar {h}", key=f"btn_{h}", use_container_width=True):
-                st.session_state.opcion_actual = h
-                st.rerun()
-
-else:
-    # --- VISTA DE DETALLE ---
-    opcion = st.session_state.opcion_actual
-    
-    if st.button("← Volver al Inicio"):
+    # Definimos la opción actual. Por defecto empezamos en HOME si existe.
+    if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
-        st.rerun()
-            
-    st.markdown(f"<h1>Análisis de Unidad: {opcion}</h1>", unsafe_allow_html=True)
-    
-    col_main, col_gallery = st.columns([1.3, 0.7], gap="large")
-    
-    with col_main:
-        st.subheader("Ficha Técnica Interactiva")
-        try:
-            # LEER HOJA ESPECÍFICA DE GOOGLE SHEETS
-            df_actual = conn.read(worksheet=opcion.strip(), ttl=0)
-            
-            if not df_actual.empty:
-                # Limpiar datos nulos para la vista
-                df_viz = df_actual.dropna(how='all', axis=0).dropna(how='all', axis=1)
-                
-                # EDITOR DE DATOS (LECTURA Y ESCRITURA)
-                df_editado = st.data_editor(
-                    df_viz, 
-                    use_container_width=True, 
-                    hide_index=True,
-                    key=f"editor_{opcion}"
-                )
-                
-                if st.button("💾 Guardar cambios en la Nube"):
-                    conn.update(worksheet=opcion.strip(), data=df_editado)
-                    st.success(f"¡Cambios guardados en la pestaña {opcion}!")
-                    st.cache_data.clear()
-                    st.rerun()
-                
-                # Links automáticos si existen en la tabla
-                for val in df_actual.values.flatten():
-                    if "http" in str(val).lower():
-                        url = str(val)[str(val).lower().find("http"):].split()[0]
-                        st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
-            else:
-                st.warning("No hay datos en esta pestaña.")
-        except Exception as e:
-            st.error(f"Error al conectar con la pestaña '{opcion}'.")
-            st.info("Asegúrate de que el nombre de la pestaña en Google Sheets coincida exactamente.")
 
-    with col_gallery:
-        st.subheader("Galería de Fotos")
-        st.info(f"Cargando multimedia para {opcion}...")
+    if st.session_state.opcion_actual == "HOME":
+        st.markdown("---")
+        
+        # --- COLUMNAS PARA INVERTIR IMAGEN Y MENÚ ---
+        col_img, col_menu = st.columns([0.5, 1.5], gap="large")
+        
+        with col_img:
+            img_home = "images/HOME.png"
+            if os.path.exists(img_home):
+                st.image(img_home, use_container_width=True)
+            else:
+                st.warning("Imagen 'HOME.png' no encontrada en la carpeta /images")
+        
+        with col_menu:
+            
+            # El radio button que controla la navegación
+            seleccion = st.radio(
+                "Seleccione Unidad:", 
+                nombres_hojas, 
+                index=nombres_hojas.index("HOME") if "HOME" in nombres_hojas else 0
+            )
+            
+            # Botón para confirmar ir al detalle si no es HOME
+            if seleccion != "HOME":
+                if st.button(f"Ver Detalle de {seleccion}", use_container_width=True):
+                    st.session_state.opcion_actual = seleccion
+                    st.rerun()
+
+    else:
+        # --- VISTA DE DETALLE DE PROPIEDAD ---
+        # 1. Identificamos la unidad seleccionada
+        opcion = st.session_state.opcion_actual if "opcion_actual" in st.session_state else opcion
+        
+        # 2. Limpiamos la palabra "HOME" del título
+        titulo_limpio = opcion.replace("HOME", "").strip()
+        
+        if st.button("← Volver al Inicio"):
+            st.session_state.opcion_actual = "HOME"
+            st.rerun()
+            
+        # Título achicado y limpio
+        st.markdown(f"<h1 style='font-size: 1.6rem !important;'>Análisis: {titulo_limpio}</h1>", unsafe_allow_html=True)
+        
+        # 3. Determinamos qué hoja del Excel leer
+        hoja_actual = "Aviso" if (opcion == "Tagle 2554" and "Aviso" in diccionario_hojas) else opcion
+        
+        if hoja_actual in diccionario_hojas and hoja_actual != "HOME":
+            df_original = diccionario_hojas[hoja_actual]
+            
+            # 4. Limpieza de datos (Borramos "HOME" de las celdas y quitamos nulos)
+            df_clean = df_original.dropna(how='all').dropna(axis=1, how='all')
+            df_clean = df_clean.replace("HOME", "") 
+            
+            col_main, col_gallery = st.columns([1.2, 0.8], gap="large")
+            
+            with col_main:
+                st.subheader("Ficha Técnica")
+                
+                # 1. Establecer la conexión con Google Sheets
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                
+                try:
+                    # 2. Leer los datos en tiempo real (ttl=0 para que no use caché vieja)
+                    df_actual = conn.read(worksheet=hoja_actual, ttl=0)
+                    
+                    if not df_actual.empty:
+                        # 3. Limpieza visual (Unnamed y Formateo)
+                        df_viz = df_actual.copy()
+                        
+                        # Limpiar encabezados "Unnamed"
+                        nuevos_cols = []
+                        for i, col in enumerate(df_viz.columns):
+                            if "Unnamed" in str(col):
+                                nuevos_cols.append(f" " * (i + 1))
+                            else:
+                                nuevos_cols.append(col)
+                        df_viz.columns = nuevos_cols
+
+                        # 4. TABLA EDITABLE: Aquí es donde puedes escribir
+                        df_editado = st.data_editor(
+                            df_viz, 
+                            use_container_width=True, 
+                            hide_index=True,
+                            key=f"editor_{hoja_actual}"
+                        )
+                        
+                        # 5. BOTÓN MÁGICO PARA GUARDAR
+                        st.write("---")
+                        if st.button("💾 Guardar cambios en Google Drive"):
+                            # Volvemos a poner los nombres originales a las columnas antes de guardar
+                            df_para_guardar = df_editado.copy()
+                            df_para_guardar.columns = df_actual.columns
+                            
+                            # Actualizamos la hoja en la nube
+                            conn.update(worksheet=hoja_actual, data=df_para_guardar)
+                            st.success("¡Datos guardados correctamente!")
+                            st.cache_data.clear() # Forzamos la recarga de datos
+                            st.rerun()
+
+                        # Botones de links (permanecen igual)
+                        for val in df_actual.values.flatten():
+                            txt = str(val).strip()
+                            if "http" in txt.lower():
+                                start = txt.lower().find("http")
+                                url = txt[start:].split()[0].split('\n')[0]
+                                st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
+                    else:
+                        st.warning("La hoja está vacía.")
+                        
+                except Exception as e:
+                    st.error(f"Error de conexión: Asegúrate de que la pestaña '{hoja_actual}' exista en tu Google Sheet.")
