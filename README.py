@@ -74,27 +74,29 @@ if diccionario_hojas:
                 df = diccionario_hojas[opcion]
                 df_clean = df.dropna(how='all', axis=0).dropna(how='all', axis=1)
 
-                # FORMATO DE MILES FORZADO Y SIN DECIMALES
+                # Identificamos columnas numéricas
                 cols_numericas = df_clean.select_dtypes(include=['number']).columns
+                
+                # Renderizado con configuración de precisión
                 st.dataframe(
                     df_clean, 
                     use_container_width=True, 
                     hide_index=True,
                     column_config={
                         col: st.column_config.NumberColumn(
-                            format="%.0f", # Asegura que sea número sin decimales
-                            help="Valor en miles"
+                            format="%d",     # Fuerza el número entero
+                            step=1           # Evita que aparezcan decimales al editar si fuera el caso
                         ) for col in cols_numericas
                     }
                 )
                 
-                # --- AJUSTE DE TAMAÑO DE IMAGEN ---
+                # Imagen con tamaño controlado y centrada
                 ruta_img = f"images/{opcion}.png"
                 if os.path.exists(ruta_img):
-                    # Quitamos el 'use_container_width' y definimos un ancho fijo
-                    st.image(ruta_img, width=200) 
+                    st.markdown("---")
+                    st.image(ruta_img, width=200)
             else:
-                st.error("Hoja no encontrada.")        
+                st.error("No se encontró la hoja de datos.")  
         else: # Vista CONTACTO
             st.subheader(f"Datos de Contacto: {opcion}")
             if "Contacto" in diccionario_hojas:
