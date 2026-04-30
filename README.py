@@ -113,7 +113,7 @@ if diccionario_hojas:
             else:
                 st.error("No se encontró la pestaña 'HOME' en el archivo.")
 
-    # --- VISTA DE DETALLE ---
+   # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
         if st.button("← Volver al Panel"):
@@ -123,16 +123,24 @@ if diccionario_hojas:
         st.subheader(f"Análisis: {opcion}")
         
         if opcion in diccionario_hojas:
-            # Limpieza de la ficha técnica para visualización
+            # 1. Preparación de datos
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0).dropna(how='all', axis=1)
             df_ficha = df_ficha.loc[:, ~df_ficha.columns.str.contains('^Unnamed')]
             
-            # Mostramos la tabla (respeta el tamaño 12px del CSS)
-            st.table(df_ficha)
+            # 2. Creación de columnas (60% para tabla, 40% para imagen)
+            col_tabla, col_foto = st.columns([1.2, 0.8], gap="medium")
             
-            ruta_img = f"images/{opcion}.png"
-            if os.path.exists(ruta_img):
-                st.markdown("---")
-                st.image(ruta_img, width=300)
+            with col_tabla:
+                # Mostramos la tabla (respeta el tamaño 12px del CSS)
+                st.table(df_ficha)
+            
+            with col_foto:
+                ruta_img = f"images/{opcion}.png"
+                if os.path.exists(ruta_img):
+                   st.markdown("---")
+                   st.image(ruta_img, width=300)
+                else:
+                    st.info(f"Sin imagen disponible para {opcion}")            
+           
 else:
     st.error("No se detectó el archivo Excel en el repositorio.")
