@@ -55,8 +55,6 @@ if diccionario_hojas:
         with col_cnt_img:
             if os.path.exists("images/HOME.png"):
                 st.image("images/HOME.png", use_container_width=True)
-
-        st.markdown("## Panel de Control de Inversiones")
         st.markdown("---")
 
         # 2. TABLA CENTRADA (Cambiamos col_menu por este contenedor centrado)
