@@ -34,16 +34,50 @@ st.markdown("""
 
 # 2. CAPA DE DATOS
 @st.cache_data
-def cargar_datos():
-    archivo = "Opciones_Deptos_LM.xlsx"
-    try:
-        if os.path.exists(archivo):
-            return pd.read_excel(archivo, sheet_name=None)
-        return None
-    except Exception:
-        return None
+# --- 1. ELIMINAMOS LA CARGA LOCAL Y USAMOS GSHEETS ---
 
-diccionario_hojas = cargar_datos()
+# Inicializamos la conexión (Asegúrate de tener esto arriba)
+conn = st.connection("gsheets", type=GSheetsConnection)
+
+# En lugar de cargar_datos(), usamos esta lógica para obtener los nombres de las unidades
+# Puedes definirlos manualmente para asegurar que no fallen o leerlos de la nube
+@st.cache_data(ttl=300)
+def obtener_nombres_unidades():
+    # Opción A: Manual (Más seguro para evitar errores de conexión en el menú)
+    return ["HOME", "Lafinur 3000", "Tagle 2554", "Cabello 3501"]
+    
+    # Opción B: Dinámica (Si quieres que lea todas las pestañas del Drive)
+    # try:
+    #     datos = conn.read(ttl=0)
+    #     return list(datos.keys()) if isinstance(datos, dict) else ["HOME"]
+    # except:
+    #     return ["HOME"]
+
+nombres_hojas = obtener_nombres_unidades()
+
+# --- 2. ACTUALIZAMOS LA VISTA DE DETALLE ---
+
+# Cuando el código necesite los datos de una unidad específica (ej. Cabello 3501):
+if st.session_state.opcion_actual != "HOME":
+    opcion = st.session_state.opcion_actual
+    
+    # IMPORTANTE: Aquí es donde reemplazamos el antiguo diccionario_hojas[opcion]
+    try:
+        # Leemos directo de la nube usando el nombre de la pestaña
+        df_actual = conn.read(worksheet=opcion.strip(), ttl=0)
+        
+        if not df_actual.empty:
+            # Tu lógica de limpieza de datos...
+            df_clean = df_actual.dropna(how='all', axis=0).dropna(how='all', axis=1)
+            
+            # Tu editor de datos para guardar cambios...
+            df_editado = st.data_editor(df_clean, use_container_width=True, hide_index=True)
+            
+            if st.button("💾 Guardar en Google Sheets"):
+                conn.update(worksheet=opcion.strip(), data=df_editado)
+                st.success("Sincronizado con Drive")
+    except Exception as e:
+        st.error(f"Error al conectar con la pestaña '{opcion}' en Google Sheets.")
 
 # 3. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
