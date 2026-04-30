@@ -36,66 +36,74 @@ diccionario_hojas = cargar_datos()
 
 # 3. LÓGICA PRINCIPAL
 if diccionario_hojas is not None:
-    # --- NAVEGACIÓN (SIDEBAR) ---
+   # --- NAVEGACIÓN (SIDEBAR) ---
     st.sidebar.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=60)
     st.sidebar.title("Inversiones")
     
     nombres_hojas = list(diccionario_hojas.keys())
-    opcion = st.sidebar.selectbox("Selecciona una propiedad:", nombres_hojas)
-
-    # Procesamiento de la hoja elegida
-    df = diccionario_hojas[opcion]
     
-    if df is not None:
-        df_clean = df.dropna(how='all').dropna(axis=1, how='all')
-    else:
-        df_clean = pd.DataFrame()
+    # Usamos radio con una key específica para que no pierda el foco
+    opcion = st.sidebar.radio(
+        "Selecciona una propiedad:", 
+        nombres_hojas, 
+        key="navegador_principal"
+    )
+
+    # 3. PROCESAMIENTO
+    df = diccionario_hojas[opcion]
+    df_clean = df.dropna(how='all').dropna(axis=1, how='all') if df is not None else pd.DataFrame()
 
     # --- CUERPO DE LA PÁGINA ---
-    st.title(f"📍 {opcion}")
-    
-    col1, col2 = st.columns([1, 1])
+    # Usamos contenedores para asegurar que el contenido se refresque
+    main_container = st.container()
 
-    with col1:
-        st.subheader("Ficha Técnica")
-        
-        if not df_clean.empty:
-            try:
-                # Mostramos la tabla sin números de índice
-                st.dataframe(df_clean.astype(str), use_container_width=True, hide_index=True)
-            except Exception as e:
-                st.error(f"Error al mostrar la tabla: {e}")
+    with main_container:
+        if opcion == "HOME":
+            st.title("📊 Resumen de Búsqueda")
+            st.markdown("### Bienvenido al tablero de control")
+            
+            # Ajustamos ruta a 'images' que es tu carpeta actual
+            ruta_home = "images/home_portada.png" 
+            if os.path.exists(ruta_home):
+                st.image(ruta_home, width=400)
             
             st.divider()
-            st.write("🔗 **Accesos Directos:**")
+            st.subheader("📋 Resumen General")
+            st.dataframe(df_clean.astype(str), use_container_width=True, hide_index=True)
 
-            # Búsqueda de links para crear botones
-            links_encontrados = []
-            for fila in df_clean.values:
-                for celda in fila:
-                    celda_str = str(celda).strip()
-                    if "http" in celda_str.lower():
-                        inicio = celda_str.find("http")
-                        link_limpio = celda_str[inicio:].split(" ")[0].split("\n")[0]
-                        links_encontrados.append(link_limpio)
+        else:
+            # VISTA DE CADA DEPARTAMENTO
+            st.title(f"📍 {opcion}")
+            col1, col2 = st.columns([1, 1])
+
+            with col1:
+                st.subheader("Ficha Técnica")
+                if not df_clean.empty:
+                    st.dataframe(df_clean.astype(str), use_container_width=True, hide_index=True)
+                    st.divider()
+                    
+                    # Lógica de botones para links
+                    links = []
+                    for fila in df_clean.values:
+                        for celda in fila:
+                            c_str = str(celda).strip()
+                            if "http" in c_str.lower():
+                                start = c_str.find("http")
+                                links.append(c_str[start:].split(" ")[0].split("\n")[0])
+                    
+                    if links:
+                        for url in sorted(list(set(links))):
+                            st.link_button("🚀 Ver Publicación Original", url, use_container_width=True, type="primary")
+                else:
+                    st.info("Esta pestaña no tiene datos.")
+
+            with col2:
+                st.subheader("Galería")
+                ruta_foto = f"images/{opcion}.png"
+                if os.path.exists(ruta_foto):
+                    st.image(ruta_foto, use_container_width=True)
+                else:
+                    st.info(f"Pendiente: images/{opcion}.png")
+
             
-            if links_encontrados:
-                for url in sorted(list(set(links_encontrados))):
-                    st.link_button("🚀 Ver Publicación Original", url, use_container_width=True, type="primary")
-            else:
-                st.info("No se detectaron links en esta pestaña.")
-        else:
-            st.warning("La pestaña seleccionada está vacía.")
-
-    with col2:
-        st.subheader("Galería")
-        # El código busca en la carpeta 'images' con extensión .png según tu último código
-        ruta_foto = f"images/{opcion}.png"
-        
-        if os.path.exists(ruta_foto):
-            st.image(ruta_foto, caption=f"Propiedad: {opcion}", use_container_width=True)
-        else:
-            st.info(f"💡 Falta subir la foto: images/{opcion}.png")
-
-else:
     st.error("No se encontró el archivo Excel 'Opciones_Deptos_LM.xlsx'. Asegúrate de que el nombre sea exacto.")
