@@ -51,7 +51,7 @@ if diccionario_hojas:
    # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
         # 1. IMAGEN ARRIBA Y CENTRADA
-        col_izq_img, col_cnt_img, col_der_img = st.columns([1.2, 0.5, 0.5])
+        col_principal = st.columns(1)[0]
         with col_cnt_img:
             if os.path.exists("images/HOME.png"):
                 st.image("images/HOME.png", use_container_width=True)
