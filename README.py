@@ -13,26 +13,29 @@ st.set_page_config(
 st.markdown("""
     <style>
     /* 1. Achicar márgenes superiores */
+    /* 1. Contenedor principal */
     .block-container {
         padding-top: 1rem !important;
         max-width: 550px !important; 
-        margin: 0 auto !important; /* Asegura que el contenedor principal esté centrado en PC */
-    }
-/* Regla específica para centrar la imagen */
-    [data-testid="stImage"] {
-        display: flex;
-        justify-content: center;
+        margin: 0 auto !important;
     }
 
-    [data-testid="stImage"] img {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    /* 2. LOGO: Tamaño aumentado y centrado */
+    /* 2. LOGO: Forzar centrado total */
     .logo-container {
-        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
         margin-bottom: 20px;
+    }
+
+    /* 3. TIPOGRAFÍA UNIFICADA: Sin negritas, misma fuente */
+    .tabla-texto, .contacto-texto, .encabezado-tabla {
+        font-size: 12px !important;
+        font-weight: 400 !important; /* Quita las negritas */
+        font-family: sans-serif !important;
+        margin: 0 !important;
+        line-height: 1.5;
     }
 
     /* 3. EVITAR QUE LAS COLUMNAS SE APILEN EN MÓVIL */
@@ -83,48 +86,23 @@ if diccionario_hojas:
 
     # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        # IMAGEN HOME: Aumentada a 320px
         if os.path.exists("images/HOME.png"):
-            st.markdown('<div class="logo-container">', unsafe_allow_html=True)
-            st.image("images/HOME.png", width=320) # <-- Ajuste de tamaño solicitado
-            st.markdown('</div>', unsafe_allow_html=True)
+            # Usamos columnas para forzar el centrado físico además del CSS
+            col_izq, col_logo, col_der = st.columns([1, 4, 1])
+            with col_logo:
+                st.image("images/HOME.png", width=320)
         
-        st.markdown("<h4 style='text-align: center; margin-top: 0;'>Panel de Control</h4>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; font-size: 14px; font-weight: 400;'>Panel de Control</p>", unsafe_allow_html=True)
 
         if "HOME" in diccionario_hojas:
-            df_home = diccionario_hojas["HOME"]
-            unidades_vistas = set()
-
-            # Encabezado Manual
+            # ... resto de tu código de carga ...
+            
+            # Encabezado Manual (Cambié <b> por <p> para quitar negritas)
             st.markdown("---")
             h = st.columns([1, 0.8, 1.2])
-            h[0].markdown("<b style='font-size:12px;'>Unidad</b>", unsafe_allow_html=True)
-            h[1].markdown("<center><b style='font-size:12px;'>Acción</b></center>", unsafe_allow_html=True)
-            h[2].markdown("<div style='text-align:right'><b style='font-size:12px;'>Contacto</b></div>", unsafe_allow_html=True)
-            st.markdown("<hr style='border: 1px solid #333; margin: 2px 0;'>", unsafe_allow_html=True)
-            if df_home is not None:
-                for index, row in df_home.iterrows():
-                    val_unidad = str(row[0]).strip() if pd.notnull(row[0]) else ""
-                    if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
-                        continue
-                    unidades_vistas.add(val_unidad)
-                    
-                    # FILA (No se apila en móvil)
-                    fila = st.columns([1, 0.8, 1.2])
-                    
-                    with fila[0]:
-                        st.markdown(f"<p class='tabla-texto'>{val_unidad}</p>", unsafe_allow_html=True)
-                    
-                    with fila[1]:
-                        if st.button("Ver", key=f"btn_{index}"):
-                            st.session_state.opcion_actual = hojas_reales.get(val_unidad.upper(), "HOME")
-                            st.rerun()
-                    
-                    with fila[2]:
-                        val_contacto = str(row[2]).strip() if len(row) > 2 and pd.notnull(row[2]) else "-"
-                        st.markdown(f"<p class='contacto-texto'>{val_contacto}</p>", unsafe_allow_html=True)
-                    
-                    st.markdown("<hr>", unsafe_allow_html=True)
+            h[0].markdown("<p class='encabezado-tabla'>Unidad</p>", unsafe_allow_html=True)
+            h[1].markdown("<p class='encabezado-tabla' style='text-align:center;'>Acción</p>", unsafe_allow_html=True)
+            h[2].markdown("<p class='encabezado-tabla' style='text-align:right;'>Contacto</p>", unsafe_allow_html=True)
 
     # --- VISTA DE DETALLE ---
     else:
