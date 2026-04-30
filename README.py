@@ -52,17 +52,34 @@ if diccionario_hojas:
                 cols_header[i].markdown(f"**{header}**")
             st.markdown("---")
 
-            # Recorremos las filas para poner los datos y el botón
+           # --- RENDERIZADO DE TABLA CON BOTONES INTEGRADOS ---
+            # Creamos el encabezado de la tabla dinámicamente
+            cols_header = st.columns([1.5, 1, 1, 1]) 
+            headers = df_home.columns.tolist()
+            for i, header in enumerate(headers):
+                if i < len(cols_header):
+                    cols_header[i].markdown(f"**{header}**")
+            st.markdown("---")
+
+            # Recorremos las filas usando .iloc para evitar el KeyError
             for index, row in df_home.iterrows():
-                c1, c2, c3, c4 = st.columns([1, 1, 1, 1])
+                c1, c2, c3, c4 = st.columns([1.5, 1, 1, 1])
                 
-                # Suponiendo que tus columnas son: Propiedad, Precio, Contacto, Aviso
-                # Ajustá los nombres de las columnas según tu Excel exacto
-                nombre_unidad = row[0] # Primera columna (ej: Lafinur)
+                # Usamos .iloc para acceder por posición física (0, 1, 2...)
+                nombre_unidad = row.iloc[0] 
                 
-                c1.write(row[0])
-                c2.write(row[1])
-                c3.write(row[2])
+                c1.write(row.iloc[0]) # Columna Propiedad
+                c2.write(row.iloc[1]) # Columna Precio
+                c3.write(row.iloc[2]) # Columna Contacto
+                
+                # En la cuarta columna ponemos el botón
+                with c4:
+                    # El botón solo se crea si hay un nombre de unidad válido
+                    if pd.notnull(nombre_unidad):
+                        if st.button("Ver Ficha", key=f"btn_{index}", use_container_width=True):
+                            st.session_state.opcion_actual = nombre_unidad
+                            st.rerun()
+                st.markdown("<hr style='margin: 2px 0;'>", unsafe_allow_html=True)
                 
                 # En la cuarta columna (Aviso), ponemos el botón de detalle
                 with c4:
