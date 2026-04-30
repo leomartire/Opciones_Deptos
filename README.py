@@ -9,15 +9,14 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. CARGA DE DATOS (Mantenemos el formato de texto para tus miles manuales)
+# 2. CARGA DE DATOS
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            # Leemos todo como string para que no se rompa el formato del Excel
             dict_hojas = pd.read_excel(archivo, sheet_name=None, dtype=str)
-            # Limpieza rápida de la columna de índice fantasma
+            # Limpieza de columnas fantasma en todas las hojas
             for nombre in dict_hojas:
                 if "Unnamed: 0" in dict_hojas[nombre].columns:
                     dict_hojas[nombre] = dict_hojas[nombre].drop(columns=["Unnamed: 0"])
@@ -30,8 +29,6 @@ diccionario_hojas = cargar_datos()
 
 # 3. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
-    nombres_hojas = list(diccionario_hojas.keys())
-    
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
@@ -48,36 +45,43 @@ if diccionario_hojas:
             st.markdown("### Panel de Control de Unidades")
             
             df_home = diccionario_hojas["HOME"].dropna(how='all')
-            num_cols = len(df_home.columns)
             
-            # Definimos anchos de columna proporcionales
-            anchos = [1.5] + [1] * (num_cols - 1)
+            # --- AJUSTE DE COLUMNAS ---
+            # Suponiendo que tu Excel tiene: [Unidad, Precio, Aviso, Contacto]
+            # Queremos mostrar solo: [Unidad, Precio, Contacto, BOTÓN]
             
-            # Encabezados
+            # Definimos los anchos para las 4 columnas que mostraremos
+            anchos = [1.5, 1, 1.5, 1]
+            
+            # Encabezados personalizados (saltándonos la columna 'Aviso')
             cols_h = st.columns(anchos)
-            for i, col_name in enumerate(df_home.columns):
-                cols_h[i].markdown(f"**{col_name}**")
+            cols_h[0].markdown("**Unidad**")
+            cols_h[1].markdown("**Precio**")
+            cols_h[2].markdown("**Contacto**")
+            cols_h[3].markdown("**Acción**")
             st.markdown("---")
 
-            # Filas con el botón integrado en la última columna
+            # Filas
             for index, row in df_home.iterrows():
                 cols_f = st.columns(anchos)
                 
-                # Nombre de la unidad para la navegación (siempre primera columna)
-                unidad_destino = str(row.iloc[0]).strip()
+                # Tomamos los datos por posición física para evitar errores de nombre
+                unidad_destino = str(row.iloc[0]).strip() # Columna 0: Unidad
+                precio = row.iloc[1]                     # Columna 1: Precio
+                # Nos saltamos la columna 2 (Aviso)
+                contacto = row.iloc[3] if len(row) > 3 else "-" # Columna 3: Contacto
                 
-                for i in range(num_cols):
-                    if i == num_cols - 1: # Si es la última columna (Aviso/Link)
-                        with cols_f[i]:
-                            # Solo creamos el botón si la unidad existe como pestaña
-                            if unidad_destino in diccionario_hojas and unidad_destino != "HOME":
-                                if st.button("Ver Ficha", key=f"btn_{index}"):
-                                    st.session_state.opcion_actual = unidad_destino
-                                    st.rerun()
-                            else:
-                                cols_f[i].write("-")
-                    else:
-                        cols_f[i].write(row.iloc[i])
+                cols_f[0].write(unidad_destino)
+                cols_f[1].write(precio)
+                cols_f[2].write(contacto)
+                
+                # Botón de navegación
+                with cols_f[3]:
+                    if unidad_destino in diccionario_hojas and unidad_destino != "HOME":
+                        if st.button("Ver Ficha", key=f"btn_{index}"):
+                            st.session_state.opcion_actual = unidad_destino
+                            st.rerun()
+                
                 st.markdown("<hr style='margin: 2px 0;'>", unsafe_allow_html=True)
 
     # --- VISTA DE DETALLE ---
@@ -91,8 +95,7 @@ if diccionario_hojas:
         
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0).dropna(how='all', axis=1)
-            
-            # Usamos st.table para que respete al 100% el texto de tus celdas
+            # Mostramos la ficha técnica con st.table para respetar el formato Excel
             st.table(df_ficha)
             
             ruta_img = f"images/{opcion}.png"
@@ -100,4 +103,4 @@ if diccionario_hojas:
                 st.markdown("---")
                 st.image(ruta_img, width=500)
 else:
-    st.error("No se encontró el archivo Excel o el formato es incorrecto.")
+    st.error("No se pudo cargar el archivo Excel.")
