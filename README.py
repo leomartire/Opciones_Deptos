@@ -46,16 +46,42 @@ if diccionario_hojas is not None:
 
     # --- CUERPO DE LA PÁGINA ---
     if opcion == "HOME":
-        st.title("📊 Lista de oportunidades")
-        ruta_home = "images/home_portada.png" 
+        st.title("📊 Resumen de Inversiones")
+        
+        # 1. Imagen de bienvenida
+        ruta_home = "images/home_portada.png"
         if os.path.exists(ruta_home):
-            st.image(ruta_home, width=400)
+            st.image(ruta_home, width=450)
+        
         st.divider()
-        st.dataframe(df_clean.astype(str), use_container_width=True, hide_index=True)
-
-    else:
-        st.title(f"📍 {opcion}")
-        col1, col2 = st.columns([1, 1])
+        
+        # 2. Resumen rápido en columnas (en lugar de una tabla larga)
+        st.subheader("🚀 Oportunidades en Análisis")
+        
+        # Filtramos para no incluir el propio HOME
+        deptos = [h for h in nombres_hojas if h != "HOME"]
+        
+        # Creamos filas de 2 columnas para que se vea bien en mobile
+        cols = st.columns(2)
+        for i, depto in enumerate(deptos):
+            with cols[i % 2]:
+                with st.container(border=True):
+                    st.markdown(f"### 📍 {depto}")
+                    # Aquí el link al detalle del aviso original
+                    # Buscamos el link en esa hoja específica
+                    df_temp = diccionario_hojas[depto]
+                    link = "No disponible"
+                    for val in df_temp.values.flatten():
+                        if "http" in str(val).lower():
+                            link = str(val).strip()
+                            break
+                    
+                    if link != "No disponible":
+                        st.link_button(f"🔍 Ver Aviso Original", link, use_container_width=True)
+                    else:
+                        st.write("Sin link registrado")
+        
+        st.info("👈 Usá el menú lateral para ver la **Ficha Técnica** completa y las fotos de cada propiedad.")
 
         with col1:
             st.subheader("Ficha Técnica")
