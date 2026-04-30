@@ -58,8 +58,6 @@ if diccionario_hojas:
             if os.path.exists("images/HOME.png"):
                 st.image("images/HOME.png", use_container_width=True)
                 if os.path.exists("images/HOME.png"):
-        st.image("images/HOME.png", use_container_width=True)
-        
         with col_menu:
             if "HOME" in diccionario_hojas:
                 df_home = diccionario_hojas["HOME"]
