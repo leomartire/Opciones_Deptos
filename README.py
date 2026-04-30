@@ -9,51 +9,60 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. ESTILO CSS GLOBAL (Fuente 12px)
+# 2. ESTILO CSS GLOBAL (Corregido y Unificado)
 st.markdown("""
     <style>
-    /* Limita el ancho en computadoras pero deja que use todo en celulares */
+    /* Contenedor principal para centrar en PC */
     @media (min-width: 1024px) {
         .main-container {
             max-width: 600px;
-            margin: 0 auto; /* Esto centra todo el bloque */
+            margin: 0 auto;
         }
     }
     
-    /* Elimina espacios vacíos que Streamlit pone por defecto */
+    /* Ajustes de fuente y espaciado general */
+    html, body, [class*="st-"] { font-size: 12px !important; }
+    
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 0rem !important;
     }
-</style>
-    html, body, [class*="st-"] { font-size: 12px !important; }
-    .stTable td, .stTable th { font-size: 12px !important; }
+
     .stMarkdown p {
         margin-bottom: 0px !important;
         line-height: 1.2 !important;
-        font-size: 11px !important;
-    }    
+    }
+
+    /* Botones compactos */
     .stButton>button {
-        height: 1.5em !important;
-        padding: 0px 5px !important;
+        height: 20px !important;
+        padding: 0px 10px !important;
         font-size: 10px !important;
         min-height: 20px !important;
+        line-height: 1 !important;
+        width: auto !important;
     }
-    hr { 
-        margin-top: 2px !important; 
-        margin-bottom: 2px !important; 
-        opacity: 0.2; 
+
+    /* Estilo para la fila 'Tabla' responsiva */
+    .tabla-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
     }
+    .col-unidad { flex: 1; font-weight: bold; font-size: 11px; }
+    .col-boton { flex: 0.5; text-align: center; }
+    .col-contacto { flex: 1.5; text-align: right; font-size: 11px; color: #555; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. CARGA DE DATOS (Preservando todo el contenido)
+# 3. CARGA DE DATOS
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            # Cargamos sin encabezado para controlar nosotros las filas
             return pd.read_excel(archivo, sheet_name=None, header=None, dtype=str)
         return None
     except Exception:
@@ -63,22 +72,17 @@ diccionario_hojas = cargar_datos()
 
 # 4. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
-    # Mapeo de pestañas para el ruteo
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-   # --- VISTA HOME ---
+    # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        
-        # Usamos un contenedor único para evitar NameErrors y desalineaciones
-        # El CSS arriba (Paso 1) se encargará de que no se estire de más en PC
         st.markdown("<div class='main-container'>", unsafe_allow_html=True)
         
-        # 1. IMAGEN Y TÍTULO
+        # IMAGEN Y TÍTULO
         if os.path.exists("images/HOME.png"):
-            # Centramos la imagen con una columna interna pequeña
             _, col_img_cnt, _ = st.columns([1, 2, 1])
             with col_img_cnt:
                 st.image("images/HOME.png", use_container_width=True)
@@ -90,13 +94,14 @@ if diccionario_hojas:
             df_home = diccionario_hojas["HOME"]
             unidades_vistas = set()
 
-            # 2. ENCABEZADOS COMPACTOS
-            # Usamos porcentajes para que se adapten al ancho del dispositivo
-            c_head = st.columns([25, 20, 55], gap="small")
-            c_head[0].markdown("<p style='font-size: 11px; font-weight: bold; text-align: left;'>Unidad</p>", unsafe_allow_html=True)
-            c_head[1].markdown("<p style='font-size: 11px; font-weight: bold; text-align: center;'>Acción</p>", unsafe_allow_html=True)
-            c_head[2].markdown("<p style='font-size: 11px; font-weight: bold; text-align: right;'>Contacto</p>", unsafe_allow_html=True)
-            st.markdown("<hr style='margin: 0px; opacity: 0.5;'>", unsafe_allow_html=True)
+            # ENCABEZADO MANUAL (Simulado para que no se rompa)
+            st.markdown("""
+                <div class='tabla-row' style='border-bottom: 2px solid #ccc;'>
+                    <div class='col-unidad'>Unidad</div>
+                    <div class='col-boton'>Acción</div>
+                    <div class='col-contacto'>Contacto</div>
+                </div>
+            """, unsafe_allow_html=True)
 
             for index, row in df_home.iterrows():
                 val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
@@ -106,28 +111,26 @@ if diccionario_hojas:
                 
                 unidades_vistas.add(val_unidad)
                 
-                # 3. FILA DE DATOS (Mismas proporciones que el encabezado)
-                fila = st.columns([25, 20, 55], gap="small")
+                # CREACIÓN DE LA FILA (Mezcla de HTML para texto y Streamlit para el botón)
+                # Esto garantiza que el texto no se mueva, pero el botón funcione
+                c1, c2, c3 = st.columns([1, 0.6, 1.4], gap="small")
                 
-                with fila[0]:
-                    st.markdown(f"<p style='font-size: 11px; margin: 0;'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
-                
-                with fila[1]:
+                with c1:
+                    st.markdown(f"<p class='col-unidad'>{val_unidad}</p>", unsafe_allow_html=True)
+                with c2:
                     key_match = val_unidad.upper()
                     if key_match in hojas_reales:
-                        # Botón minimalista
                         if st.button("Ver", key=f"btn_{index}"):
                             st.session_state.opcion_actual = hojas_reales[key_match]
                             st.rerun()
-                
-                with fila[2]:
+                with c3:
                     val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
-                    # Alineado a la derecha para ganar espacio en el medio
-                    st.markdown(f"<p style='font-size: 11px; margin: 0; text-align: right;'>{val_contacto}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='col-contacto'>{val_contacto}</p>", unsafe_allow_html=True)
                 
-                st.markdown("<hr style='margin: 2px 0; opacity: 0.1;'>", unsafe_allow_html=True)
+                st.markdown("<hr style='margin: 0px; opacity: 0.1;'>", unsafe_allow_html=True)
         
         st.markdown("</div>", unsafe_allow_html=True)
+
     # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
@@ -139,10 +142,8 @@ if diccionario_hojas:
         
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0)
-            
             col_t, col_f = st.columns([1.2, 0.8], gap="medium")
             with col_t:
-                # Mostramos la tabla completa (Columna A, B, etc.)
                 st.table(df_ficha)
             with col_f:
                 ruta_img = f"images/{opcion}.png"
