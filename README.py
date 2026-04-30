@@ -84,59 +84,63 @@ if diccionario_hojas:
 
     else:
         # --- VISTA DE DETALLE DE PROPIEDAD ---
-        opcion = st.session_state.opcion_actual
+        # 1. Identificamos la unidad seleccionada
+        opcion = st.session_state.opcion_actual if "opcion_actual" in st.session_state else opcion
+        
+        # 2. Limpiamos la palabra "HOME" del título
+        titulo_limpio = opcion.replace("HOME", "").strip()
         
         if st.button("← Volver al Inicio"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
             
-        st.markdown(f"<h1 style='font-size: 1.2rem !important; padding-bottom: 0px;'>Análisis: {opcion}</h1>", unsafe_allow_html=True)
+        # Título achicado y limpio
+        st.markdown(f"<h1 style='font-size: 1.6rem !important;'>Análisis: {titulo_limpio}</h1>", unsafe_allow_html=True)
         
-        # 1. Obtención de datos segura
-        # Caso especial para "Tagle 2554" o similares
-        nombre_hoja_datos = "Aviso" if (opcion == "Tagle 2554" and "Aviso" in diccionario_hojas) else opcion
+        # 3. Determinamos qué hoja del Excel leer
+        hoja_actual = "Aviso" if (opcion == "Tagle 2554" and "Aviso" in diccionario_hojas) else opcion
         
-        if nombre_hoja_datos in diccionario_hojas:
-            df_original = diccionario_hojas[nombre_hoja_datos]
+        if hoja_actual in diccionario_hojas and hoja_actual != "HOME":
+            df_original = diccionario_hojas[hoja_actual]
             
-            # Limpieza profunda: eliminamos filas y columnas totalmente vacías
+            # 4. Limpieza de datos (Borramos "HOME" de las celdas y quitamos nulos)
             df_clean = df_original.dropna(how='all').dropna(axis=1, how='all')
+            df_clean = df_clean.replace("HOME", "") 
             
             col_main, col_gallery = st.columns([1.2, 0.8], gap="large")
             
             with col_main:
                 st.subheader("Ficha Técnica")
-                
                 if not df_clean.empty:
-                    # Formateo mejorado: 
-                    # 1. Si es número, le pone puntos de miles.
-                    # 2. Si es nulo (None/NaN), pone un espacio vacío.
-                    # 3. Si es texto, lo deja como está.
+                    # Formateo numérico y reemplazo de "None" por vacío
                     df_viz = df_clean.map(
                         lambda x: "{:,.0f}".format(x).replace(",", ".") 
                         if isinstance(x, (int, float)) and not pd.isna(x) 
                         else ("" if pd.isna(x) else x)
                     )
-    
+                    
                     st.dataframe(df_viz, use_container_width=True, hide_index=True)
                     
-                    # Buscamos y mostramos botones de links si existen en el Excel
+                    # Generación de botones para links
                     for val in df_clean.values.flatten():
-                        val_str = str(val).strip()
-                        if "http" in val_str.lower():
-                            # Extraer solo la URL pura
-                            start = val_str.lower().find("http")
-                            url = val_str[start:].split()[0].split('\n')[0]
+                        txt = str(val).strip()
+                        if "http" in txt.lower():
+                            url = txt[txt.lower().find("http"):].split()[0]
                             st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
                 else:
-                    st.warning(f"La hoja '{nombre_hoja_datos}' está vacía en el archivo Excel.")
-            
+                    st.warning("No se encontraron registros técnicos en esta hoja.")
+
             with col_gallery:
-                # Intentamos cargar la imagen con el nombre de la opción o del aviso
-                img_path = f"images/{nombre_hoja_datos}.png"
+                st.subheader("Documentación")
+                # Buscamos imagen por nombre de hoja o unidad
+                img_path = f"images/{hoja_actual}.png"
                 if os.path.exists(img_path):
                     st.image(img_path, use_container_width=True)
                 else:
-                    st.info("No se encontró una imagen técnica para esta unidad.")
+                    st.info("Fotografía técnica no disponible.")
         else:
-            st.error(f"No se encontró la hoja '{nombre_hoja_datos}' en el archivo Excel.")
+            if hoja_actual != "HOME":
+                st.error(f"Error: No existe la hoja '{hoja_actual}' en el archivo Excel.")
+
+else:
+    st.error("Error de Sistema: El archivo 'Opciones_Deptos_LM.xlsx' no es accesible.")
