@@ -27,11 +27,11 @@ st.markdown("""
 
     /* Botones pequeños y centrados */
     .stButton>button {
-        height: 24px !important;
+        height: 18px !important;
         padding: 0px 10px !important;
         font-size: 10px !important;
-        min-height: 24px !important;
-        width: 100% !important;
+        min-height: 18px !important;
+        width: 90% !important;
     }
 
     /* Ajuste para que las líneas divisorias no ocupen tanto espacio */
