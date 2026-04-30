@@ -64,8 +64,8 @@ if diccionario_hojas:
     nombres_hojas = list(diccionario_hojas.keys())
     
     with st.sidebar:
-        st.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=50)
-        st.markdown("### SISTEMA DE GESTIÓN")
+        st.image("https://cdn-icons-png.flaticon.com/512/609/609803.png", width=30)
+        st.markdown("### Oportunidades")
         opcion = st.radio("Seleccione Unidad:", nombres_hojas)
 
     # --- LÓGICA DE RENDERIZADO ---
