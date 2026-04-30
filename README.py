@@ -58,7 +58,7 @@ if diccionario_hojas:
         st.markdown("---")
         
         # --- COLUMNAS PARA INVERTIR IMAGEN Y MENÚ ---
-        col_img, col_menu = st.columns([1.5, 0.5], gap="large")
+        col_img, col_menu = st.columns([0.5, 1.5], gap="large")
         
         with col_img:
             img_home = "images/HOME.png"
