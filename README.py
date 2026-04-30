@@ -51,30 +51,27 @@ if diccionario_hojas:
    # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
         
-        # 1. CENTRADO GLOBAL (Afecta a imagen y tabla)
-        # Usamos [1, 2, 1] para que el contenido ocupe el 50% central en PC
-        # En móviles, Streamlit adaptará estas proporciones automáticamente
-        col_izq, col_central, col_der = st.columns([1, 2, 1])
-        
+        # 1. IMAGEN Y TÍTULO (Centrados)
+        col_izq, col_central, col_der = st.columns([1, 4, 1])
         with col_central:
-            # IMAGEN CENTRADA
             if os.path.exists("images/HOME.png"):
                 st.image("images/HOME.png", use_container_width=True)
-            
-            st.markdown("## Panel de Control de Inversiones")
+            st.markdown("<h2 style='text-align: center;'>Panel de Control de Inversiones</h2>", unsafe_allow_html=True)
             st.markdown("---")
 
             if "HOME" in diccionario_hojas:
                 df_home = diccionario_hojas["HOME"]
-                
-                # Encabezados de la tabla (ajustados para ser más compactos)
-                c_head = st.columns([1, 0.7, 1.3], gap="small")
-                c_head[0].markdown("<p class='texto-aplicacion'><b>Unidad</b></p>", unsafe_allow_html=True)
-                c_head[1].markdown("<p class='texto-aplicacion'><b>Acción</b></p>", unsafe_allow_html=True)
-                c_head[2].markdown("<p class='texto-aplicacion'><b>Contacto</b></p>", unsafe_allow_html=True)
-                st.markdown("---")
-
                 unidades_vistas = set()
+
+                # 2. TABLA EN HTML (Para forzar que sea horizontal en el celular)
+                # Encabezados
+                st.markdown("""
+                    <div style='display: flex; font-weight: bold; text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 5px; font-size: 11px;'>
+                        <div style='flex: 1.5;'>Unidad</div>
+                        <div style='flex: 1;'>Detalle</div>
+                        <div style='flex: 2;'>Contacto</div>
+                    </div>
+                """, unsafe_allow_html=True)
 
                 for index, row in df_home.iterrows():
                     val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
@@ -84,24 +81,26 @@ if diccionario_hojas:
                     
                     unidades_vistas.add(val_unidad)
                     
-                    # FILA DE DATOS DENTRO DEL CONTENEDOR CENTRAL
-                    fila = st.columns([1, 0.7, 1.3], gap="small")
+                    # FILA PERSONALIZADA
+                    # Usamos st.columns SOLO para el botón para que mantenga la funcionalidad, 
+                    # pero pegado al texto para que no se rompa la línea.
+                    c1, c2, c3 = st.columns([1.5, 1, 2], gap="small")
                     
-                    with fila[0]:
-                        st.markdown(f"<p class='texto-aplicacion'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
+                    with c1:
+                        st.markdown(f"<p style='font-size:11px; margin:0; padding-top:5px;'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
                     
-                    with fila[1]:
+                    with c2:
                         key_match = val_unidad.upper()
                         if key_match in hojas_reales:
                             if st.button("Ver", key=f"btn_{index}"):
                                 st.session_state.opcion_actual = hojas_reales[key_match]
                                 st.rerun()
                     
-                    with fila[2]:
+                    with c3:
                         val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
-                        st.markdown(f"<p class='texto-aplicacion'>{val_contacto}</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='font-size:11px; margin:0; padding-top:5px; text-align:center;'>{val_contacto}</p>", unsafe_allow_html=True)
                     
-                    st.markdown("<hr>", unsafe_allow_html=True)
+                    st.markdown("<hr style='margin: 0.2rem 0;'>", unsafe_allow_html=True)
     # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
