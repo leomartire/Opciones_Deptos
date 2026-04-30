@@ -99,7 +99,10 @@ if diccionario_hojas is not None:
         """, unsafe_allow_html=True)
 
         # Resumen visual minimalista
-                st.image("images/HOME.png", use_container_width=True)
+    if os.path.exists("images/HOME.png"):
+        st.image("images/HOME.png", use_container_width=True) # Solo 4 espacios de sangría respecto al if
+    else:
+        st.info("Utilice el menú lateral...")
 
     # --- DETALLE DE PROPIEDAD (VISTA TÉCNICA) ---
     else:
