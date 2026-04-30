@@ -58,57 +58,62 @@ if diccionario_hojas:
    # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
         
-        # 1. IMAGEN Y TÍTULO (Centrados)
-        col_izq, col_central, col_der = st.columns([1, 4, 1])
-        with col_central:
-            if os.path.exists("images/HOME.png"):
+        # Usamos un contenedor único para evitar NameErrors y desalineaciones
+        # El CSS arriba (Paso 1) se encargará de que no se estire de más en PC
+        st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+        
+        # 1. IMAGEN Y TÍTULO
+        if os.path.exists("images/HOME.png"):
+            # Centramos la imagen con una columna interna pequeña
+            _, col_img_cnt, _ = st.columns([1, 2, 1])
+            with col_img_cnt:
                 st.image("images/HOME.png", use_container_width=True)
-            st.markdown("<h2 style='text-align: center;'>Panel de Control de Inversiones</h2>", unsafe_allow_html=True)
-            st.markdown("---")
+        
+        st.markdown("<h2 style='text-align: center; font-size: 18px;'>Panel de Control de Inversiones</h2>", unsafe_allow_html=True)
+        st.markdown("---")
 
-            if "HOME" in diccionario_hojas:
-                df_home = diccionario_hojas["HOME"]
-                unidades_vistas = set()
+        if "HOME" in diccionario_hojas:
+            df_home = diccionario_hojas["HOME"]
+            unidades_vistas = set()
 
-                # 2. TABLA EN HTML (Ajuste de anchos y altos)
-                # Encabezados: Achicamos fuentes y ajustamos flex para comprimir
-                st.markdown("""
-                    <div style='display: flex; font-weight: bold; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 2px; font-size: 10px;'>
-                        <div style='flex: 1;'>Unidad</div>
-                        <div style='flex: 0.6;'>Detalle</div>
-                        <div style='flex: 1.4;'>Contacto</div>
-                    </div>
-                """, unsafe_allow_html=True)
+            # 2. ENCABEZADOS COMPACTOS
+            # Usamos porcentajes para que se adapten al ancho del dispositivo
+            c_head = st.columns([25, 20, 55], gap="small")
+            c_head[0].markdown("<p style='font-size: 11px; font-weight: bold; text-align: left;'>Unidad</p>", unsafe_allow_html=True)
+            c_head[1].markdown("<p style='font-size: 11px; font-weight: bold; text-align: center;'>Acción</p>", unsafe_allow_html=True)
+            c_head[2].markdown("<p style='font-size: 11px; font-weight: bold; text-align: right;'>Contacto</p>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin: 0px; opacity: 0.5;'>", unsafe_allow_html=True)
 
-                for index, row in df_home.iterrows():
-                    val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
-                    
-                    if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
-                        continue
-                    
-                    unidades_vistas.add(val_unidad)
-                    
-                    # FILA PERSONALIZADA: Proporciones más apretadas [1, 0.6, 1.4]
-                    c1, c2, c3 = st.columns([1, 0.6, 1.4], gap="small")
-                    
-                    with c1:
-                        # Reducimos padding-top para pegar más la fila
-                        st.markdown(f"<p style='font-size:10px; margin:0; padding-top:2px;'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
-                    
-                    with c2:
-                        key_match = val_unidad.upper()
-                        if key_match in hojas_reales:
-                            if st.button("Ver", key=f"btn_{index}"):
-                                st.session_state.opcion_actual = hojas_reales[key_match]
-                                st.rerun()
-                    
-                    with c3:
-                        val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
-                        # Alineamos a la izquierda para que no ocupe ancho innecesario centrando
-                        st.markdown(f"<p style='font-size:10px; margin:0; padding-top:2px;'>{val_contacto}</p>", unsafe_allow_html=True)
-                    
-                    # Separador casi invisible y con margen mínimo para achicar el alto total
-                    st.markdown("<hr style='margin: 0.1rem 0; opacity: 0.1;'>", unsafe_allow_html=True)
+            for index, row in df_home.iterrows():
+                val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
+                
+                if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
+                    continue
+                
+                unidades_vistas.add(val_unidad)
+                
+                # 3. FILA DE DATOS (Mismas proporciones que el encabezado)
+                fila = st.columns([25, 20, 55], gap="small")
+                
+                with fila[0]:
+                    st.markdown(f"<p style='font-size: 11px; margin: 0;'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
+                
+                with fila[1]:
+                    key_match = val_unidad.upper()
+                    if key_match in hojas_reales:
+                        # Botón minimalista
+                        if st.button("Ver", key=f"btn_{index}"):
+                            st.session_state.opcion_actual = hojas_reales[key_match]
+                            st.rerun()
+                
+                with fila[2]:
+                    val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
+                    # Alineado a la derecha para ganar espacio en el medio
+                    st.markdown(f"<p style='font-size: 11px; margin: 0; text-align: right;'>{val_contacto}</p>", unsafe_allow_html=True)
+                
+                st.markdown("<hr style='margin: 2px 0; opacity: 0.1;'>", unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
     # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
