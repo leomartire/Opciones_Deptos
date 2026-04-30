@@ -32,6 +32,7 @@ def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
+            # Leemos todo como string para preservar el formato original del Excel
             return pd.read_excel(archivo, sheet_name=None, dtype=str)
         return None
     except Exception:
@@ -41,8 +42,7 @@ diccionario_hojas = cargar_datos()
 
 # 4. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
-    # Creamos un diccionario de mapeo "Limpio" para evitar errores de espacios
-    # Esto soluciona problemas como "LAFINUR 3000 " vs "LAFINUR 3000"
+    # Mapeo de pestañas ultra-flexible (ignora espacios y mayúsculas)
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
     if "opcion_actual" not in st.session_state:
@@ -61,8 +61,10 @@ if diccionario_hojas:
         
         with col_menu:
             if "HOME" in diccionario_hojas:
+                # Obtenemos la hoja HOME y limpiamos filas vacías
                 df_home = diccionario_hojas["HOME"].dropna(how='all')
                 
+                # Encabezados (Columnas A, B y C)
                 c_head = st.columns([1.5, 1, 2])
                 c_head[0].markdown("<p class='texto-aplicacion'><b>Unidad</b></p>", unsafe_allow_html=True)
                 c_head[1].markdown("<p class='texto-aplicacion'><b>Detalle</b></p>", unsafe_allow_html=True)
@@ -70,36 +72,33 @@ if diccionario_hojas:
                 st.markdown("---")
 
                 for index, row in df_home.iterrows():
-                    if pd.isna(row.iloc[0]) or str(row.iloc[0]).strip() == "":
+                    # Verificamos que la primera columna tenga nombre
+                    val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
+                    if val_unidad == "" or val_unidad.upper() == "UNIDAD":
                         continue
                     
                     fila = st.columns([1.5, 1, 2])
                     
-                    # Unidad
-                    unidad_nombre = str(row.iloc[0]).strip()
-                    fila[0].markdown(f"<p class='texto-aplicacion'><b>{unidad_nombre}</b></p>", unsafe_allow_html=True)
+                    # Columna A: Unidad
+                    fila[0].markdown(f"<p class='texto-aplicacion'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
                     
-                    # Botón de Detalle con validación mejorada
+                    # Columna B: Botón con validación de pestaña
                     with fila[1]:
-                        # Limpiamos el nombre de la unidad para la búsqueda
-                        unidad_key = unidad_nombre.upper().strip()
-                        
+                        unidad_key = val_unidad.upper()
                         if unidad_key in hojas_reales and unidad_key != "HOME":
                             if st.button("Ver Análisis", key=f"btn_{index}"):
                                 st.session_state.opcion_actual = hojas_reales[unidad_key]
                                 st.rerun()
                         else:
-                            # Si no encuentra la pestaña, muestra un aviso sutil
-                            fila[1].markdown("<p style='color:orange; font-size:10px;'>Pestaña no encontrada</p>", unsafe_allow_html=True)
+                            fila[1].markdown("<p style='color:gray; font-size:10px;'>Sin ficha</p>", unsafe_allow_html=True)
                     
-                    # Contacto
-                    contacto_info = row.iloc[2] if len(row) > 2 else "-"
-                    texto_contacto = contacto_info if pd.notnull(contacto_info) else "-"
-                    fila[2].markdown(f"<p class='texto-aplicacion'>{texto_contacto}</p>", unsafe_allow_html=True)
+                    # Columna C: Contacto (Fuerza la lectura de la tercera columna)
+                    val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
+                    fila[2].markdown(f"<p class='texto-aplicacion'>{val_contacto}</p>", unsafe_allow_html=True)
                     
                     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # --- VISTA DE DETALLE (TABLA + IMAGEN AL COSTADO) ---
+    # --- VISTA DE DETALLE (TABLA + IMAGEN) ---
     else:
         opcion = st.session_state.opcion_actual
         if st.button("← Volver al Panel"):
@@ -112,16 +111,17 @@ if diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0).dropna(how='all', axis=1)
             df_ficha = df_ficha.loc[:, ~df_ficha.columns.str.contains('^Unnamed')]
             
-            # Layout de dos columnas: Tabla y Foto
+            # Layout de dos columnas
             col_t, col_f = st.columns([1.2, 0.8], gap="medium")
             
             with col_t:
                 st.table(df_ficha)
             
             with col_f:
-                # El nombre del archivo debe ser exacto (ej: LAFINUR 3000.png)
                 ruta_img = f"images/{opcion}.png"
                 if os.path.exists(ruta_img):
                     st.image(ruta_img, use_container_width=True)
                 else:
-                    st.info("Imagen no disponible")
+                    st.info(f"Cargue la imagen como: images/{opcion}.png")
+else:
+    st.error("No se encontró el archivo Excel.")
