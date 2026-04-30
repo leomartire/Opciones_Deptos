@@ -50,7 +50,6 @@ if diccionario_hojas:
 
     # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        st.markdown("## Panel de Control de Inversiones")
         st.markdown("---")
         
         col_img, col_menu = st.columns([0.6, 1.4], gap="large")
