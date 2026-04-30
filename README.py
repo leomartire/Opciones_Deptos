@@ -9,13 +9,12 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. CARGA DE DATOS (Sin filtros raros, directo del Excel)
+# 2. CARGA DE DATOS
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            # Leemos como texto para que respete tus puntos de miles manuales
             return pd.read_excel(archivo, sheet_name=None, dtype=str)
         return None
     except Exception:
@@ -25,8 +24,6 @@ diccionario_hojas = cargar_datos()
 
 # 3. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
-    nombres_hojas = list(diccionario_hojas.keys())
-    
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
@@ -42,22 +39,37 @@ if diccionario_hojas:
         with col_menu:
             st.markdown("### Panel de Control de Unidades")
             
-            # Mostramos la hoja HOME tal cual, eliminando solo si aparece la columna Unnamed de índice
             df_home = diccionario_hojas["HOME"]
+            # Eliminamos la columna de índice si existe
             if "Unnamed: 0" in df_home.columns:
                 df_home = df_home.drop(columns=["Unnamed: 0"])
             
-            # Mostramos tu tabla de contactos/unidades
-            st.table(df_home)
-            
-            st.markdown("#### Seleccionar Unidad para Detalle:")
-            # Botones para navegar a las otras pestañas
-            for unidad in nombres_hojas:
-                if unidad == "HOME":
-                    continue
-                if st.button(f"🔍 Ficha: {unidad}", use_container_width=True):
-                    st.session_state.opcion_actual = unidad
-                    st.rerun()
+            # --- RENDERIZADO DE TABLA CON BOTONES INTEGRADOS ---
+            # Creamos el encabezado de la tabla
+            cols_header = st.columns([1, 1, 1, 1]) 
+            headers = df_home.columns.tolist()
+            for i, header in enumerate(headers):
+                cols_header[i].markdown(f"**{header}**")
+            st.markdown("---")
+
+            # Recorremos las filas para poner los datos y el botón
+            for index, row in df_home.iterrows():
+                c1, c2, c3, c4 = st.columns([1, 1, 1, 1])
+                
+                # Suponiendo que tus columnas son: Propiedad, Precio, Contacto, Aviso
+                # Ajustá los nombres de las columnas según tu Excel exacto
+                nombre_unidad = row[0] # Primera columna (ej: Lafinur)
+                
+                c1.write(row[0])
+                c2.write(row[1])
+                c3.write(row[2])
+                
+                # En la cuarta columna (Aviso), ponemos el botón de detalle
+                with c4:
+                    if st.button("Ver Ficha", key=f"btn_{nombre_unidad}_{index}", use_container_width=True):
+                        st.session_state.opcion_actual = nombre_unidad
+                        st.rerun()
+                st.markdown("<hr style='margin: 2px 0;'>", unsafe_allow_html=True)
 
     # --- VISTA DE DETALLE ---
     else:
@@ -70,8 +82,6 @@ if diccionario_hojas:
         
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion]
-            
-            # Quitamos la columna molesta si existe
             if "Unnamed: 0" in df_ficha.columns:
                 df_ficha = df_ficha.drop(columns=["Unnamed: 0"])
             
