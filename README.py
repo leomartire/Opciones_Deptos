@@ -10,7 +10,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. INICIALIZAR CONEXIÓN (Fuera de cualquier función para persistencia)
+# 2. INICIALIZAR CONEXIÓN
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # --- ESTILOS CSS PROFESIONALES ---
@@ -39,34 +39,29 @@ st.markdown("""
 @st.cache_data(ttl=0)
 def cargar_datos():
     try:
-        return conn.read()
+        data = conn.read()
+        return data
     except Exception as e:
         st.error(f"Error al conectar con Google Sheets: {e}")
         return None
 
 diccionario_hojas = cargar_datos()
 
-# 4. LÓGICA DE NAVEGACIÓN (CORREGIDA)
-# Usamos 'is not None' para evitar el ValueError de Pandas
+# 4. LÓGICA DE NAVEGACIÓN Y RENDERIZADO
+# Validamos con 'is not None' para evitar errores de ambigüedad de Pandas
 if diccionario_hojas is not None:
-    # Si la respuesta es un DataFrame único, lo convertimos a dict para que tu código no rompa
+    
+    # Normalizamos la entrada: siempre queremos un diccionario
     if isinstance(diccionario_hojas, pd.DataFrame):
         diccionario_hojas = {"Hoja1": diccionario_hojas}
     
     nombres_hojas = list(diccionario_hojas.keys())
     
-    # --- Resto de tu lógica de navegación ---
+    # Inicializamos el estado de la sesión
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-
-# 5. LÓGICA DE NAVEGACIÓN
-if diccionario_hojas:
-    nombres_hojas = list(diccionario_hojas.keys())
-    
-    if "opcion_actual" not in st.session_state:
-        st.session_state.opcion_actual = "HOME"
-
+    # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
         st.markdown("---")
         col_img, col_menu = st.columns([0.5, 1.5], gap="large")
@@ -90,8 +85,8 @@ if diccionario_hojas:
                     st.session_state.opcion_actual = seleccion
                     st.rerun()
 
+    # --- VISTA DETALLE ---
     else:
-        # --- VISTA DE DETALLE DE PROPIEDAD ---
         opcion = st.session_state.opcion_actual
         titulo_limpio = opcion.replace("HOME", "").strip()
         
@@ -101,21 +96,21 @@ if diccionario_hojas:
             
         st.markdown(f"<h1 style='font-size: 1.6rem !important;'>Análisis: {titulo_limpio}</h1>", unsafe_allow_html=True)
         
-        # Determinamos qué hoja leer (Lógica específica para Tagle)
+        # Lógica de pestañas específicas
         hoja_actual = "Aviso" if (opcion == "Tagle 2554" and "Aviso" in diccionario_hojas) else opcion
         
-        if hoja_actual in diccionario_hojas and hoja_actual != "HOME":
+        if hoja_actual in diccionario_hojas:
             col_main, col_gallery = st.columns([1.2, 0.8], gap="large")
             
             with col_main:
                 st.subheader("Ficha Técnica")
                 
                 try:
-                    # Leer datos específicos de la hoja seleccionada
+                    # Leemos la pestaña específica directamente
                     df_actual = conn.read(worksheet=hoja_actual.strip(), ttl=0)
                     
-                    if not df_actual.empty:
-                        # Limpieza visual de columnas vacías/Unnamed
+                    if df_actual is not None and not df_actual.empty:
+                        # Limpieza visual
                         df_viz = df_actual.copy()
                         df_viz.columns = [f" " * (i + 1) if "Unnamed" in str(col) else col for i, col in enumerate(df_viz.columns)]
 
@@ -129,7 +124,6 @@ if diccionario_hojas:
                         
                         st.write("---")
                         if st.button("💾 Guardar cambios en Google Drive"):
-                            # Restaurar nombres de columnas originales para el guardado
                             df_para_guardar = df_editado.copy()
                             df_para_guardar.columns = df_actual.columns
                             
@@ -138,7 +132,7 @@ if diccionario_hojas:
                             st.cache_data.clear()
                             st.rerun()
 
-                        # Extracción de links dinámicos
+                        # Enlaces automáticos
                         for val in df_actual.values.flatten():
                             txt = str(val).strip()
                             if "http" in txt.lower():
@@ -146,11 +140,15 @@ if diccionario_hojas:
                                 url = txt[start:].split()[0].split('\n')[0]
                                 st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
                     else:
-                        st.warning("La hoja está vacía.")
+                        st.warning("La hoja seleccionada no tiene datos.")
                         
                 except Exception as e:
-                    st.error(f"Error al cargar la pestaña '{hoja_actual}': {e}")
+                    st.error(f"Error al procesar la pestaña '{hoja_actual}': {e}")
 
             with col_gallery:
                 st.subheader("Galería")
                 st.info(f"Mostrando multimedia de {titulo_limpio}")
+        else:
+            st.error(f"La pestaña '{hoja_actual}' no existe en el documento.")
+else:
+    st.info("Esperando conexión con la base de datos...")
