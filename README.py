@@ -99,19 +99,51 @@ if diccionario_hojas:
             
         st.title(f"Análisis: {opcion}")
         
-        # Lógica de datos espejo
-        if opcion == "Tagle 2554" and "Aviso" in diccionario_hojas:
-            df_display = diccionario_hojas["Aviso"]
-            foto_id = "Aviso"
+        # 1. Obtención de datos segura
+        # Caso especial para "Tagle 2554" o similares
+        nombre_hoja_datos = "Aviso" if (opcion == "Tagle 2554" and "Aviso" in diccionario_hojas) else opcion
+        
+        if nombre_hoja_datos in diccionario_hojas:
+            df_original = diccionario_hojas[nombre_hoja_datos]
+            
+            # Limpieza profunda: eliminamos filas y columnas totalmente vacías
+            df_clean = df_original.dropna(how='all').dropna(axis=1, how='all')
+            
+            col_main, col_gallery = st.columns([1.2, 0.8], gap="large")
+            
+            with col_main:
+                st.subheader("Ficha Técnica")
+                
+                if not df_clean.empty:
+                    # Aplicamos el formato de miles y decimales solo a números
+                    # Se corrigieron los paréntesis para evitar el SyntaxError
+                    df_viz = df_clean.map(
+                        lambda x: "{:,.0f}".format(x).replace(",", ".") 
+                        if isinstance(x, (int, float)) and not pd.isna(x) 
+                        else x
+                    )
+                    
+                    # Mostramos la tabla
+                    st.dataframe(df_viz, use_container_width=True, hide_index=True)
+                    
+                    # Buscamos y mostramos botones de links si existen en el Excel
+                    for val in df_clean.values.flatten():
+                        val_str = str(val).strip()
+                        if "http" in val_str.lower():
+                            # Extraer solo la URL pura
+                            start = val_str.lower().find("http")
+                            url = val_str[start:].split()[0].split('\n')[0]
+                            st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
+                else:
+                    st.warning(f"La hoja '{nombre_hoja_datos}' está vacía en el archivo Excel.")
+            
+            with col_gallery:
+                st.subheader("Documentación")
+                # Intentamos cargar la imagen con el nombre de la opción o del aviso
+                img_path = f"images/{nombre_hoja_datos}.png"
+                if os.path.exists(img_path):
+                    st.image(img_path, use_container_width=True)
+                else:
+                    st.info("No se encontró una imagen técnica para esta unidad.")
         else:
-            df_display = diccionario_hojas[opcion]
-            foto_id = opcion
-
-        df_clean = df_display.dropna(how='all').dropna(axis=1, how='all')
-        
-        c1, c2 = st.columns([1.2, 0.8], gap="large")
-        
-        with c1:
-            st.subheader("Ficha Técnica")
-            if not df_clean.empty:
-                df_viz = df_clean.map(lambda x: "{:,.0f}".format(x).replace(",", "."))
+            st.error(f"No se encontró la hoja '{nombre_hoja_datos}' en el archivo Excel.")
