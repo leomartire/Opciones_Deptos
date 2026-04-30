@@ -9,13 +9,19 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. CARGA DE DATOS
+# 2. CARGA DE DATOS (Mantenemos el formato de texto para tus miles manuales)
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            return pd.read_excel(archivo, sheet_name=None, dtype=str)
+            # Leemos todo como string para que no se rompa el formato del Excel
+            dict_hojas = pd.read_excel(archivo, sheet_name=None, dtype=str)
+            # Limpieza rápida de la columna de índice fantasma
+            for nombre in dict_hojas:
+                if "Unnamed: 0" in dict_hojas[nombre].columns:
+                    dict_hojas[nombre] = dict_hojas[nombre].drop(columns=["Unnamed: 0"])
+            return dict_hojas
         return None
     except Exception:
         return None
@@ -24,6 +30,8 @@ diccionario_hojas = cargar_datos()
 
 # 3. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
+    nombres_hojas = list(diccionario_hojas.keys())
+    
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
@@ -39,53 +47,37 @@ if diccionario_hojas:
         with col_menu:
             st.markdown("### Panel de Control de Unidades")
             
-            df_home = diccionario_hojas["HOME"]
-            # Eliminamos la columna de índice si existe
-            if "Unnamed: 0" in df_home.columns:
-                df_home = df_home.drop(columns=["Unnamed: 0"])
+            df_home = diccionario_hojas["HOME"].dropna(how='all')
+            num_cols = len(df_home.columns)
             
-            # --- RENDERIZADO DE TABLA CON BOTONES INTEGRADOS ---
-            # Creamos el encabezado de la tabla
-            cols_header = st.columns([1, 1, 1, 1]) 
-            headers = df_home.columns.tolist()
-            for i, header in enumerate(headers):
-                cols_header[i].markdown(f"**{header}**")
+            # Definimos anchos de columna proporcionales
+            anchos = [1.5] + [1] * (num_cols - 1)
+            
+            # Encabezados
+            cols_h = st.columns(anchos)
+            for i, col_name in enumerate(df_home.columns):
+                cols_h[i].markdown(f"**{col_name}**")
             st.markdown("---")
 
-           # --- RENDERIZADO DE TABLA CON BOTONES INTEGRADOS ---
-            # Creamos el encabezado de la tabla dinámicamente
-            cols_header = st.columns([1.5, 1, 1, 1]) 
-            headers = df_home.columns.tolist()
-            for i, header in enumerate(headers):
-                if i < len(cols_header):
-                    cols_header[i].markdown(f"**{header}**")
-            st.markdown("---")
-
-            # Recorremos las filas usando .iloc para evitar el KeyError
+            # Filas con el botón integrado en la última columna
             for index, row in df_home.iterrows():
-                c1, c2, c3, c4 = st.columns([1.5, 1, 1, 1])
+                cols_f = st.columns(anchos)
                 
-                # Usamos .iloc para acceder por posición física (0, 1, 2...)
-                nombre_unidad = row.iloc[0] 
+                # Nombre de la unidad para la navegación (siempre primera columna)
+                unidad_destino = str(row.iloc[0]).strip()
                 
-                c1.write(row.iloc[0]) # Columna Propiedad
-                c2.write(row.iloc[1]) # Columna Precio
-                c3.write(row.iloc[2]) # Columna Contacto
-                
-                # En la cuarta columna ponemos el botón
-                with c4:
-                    # El botón solo se crea si hay un nombre de unidad válido
-                    if pd.notnull(nombre_unidad):
-                        if st.button("Ver Ficha", key=f"btn_{index}", use_container_width=True):
-                            st.session_state.opcion_actual = nombre_unidad
-                            st.rerun()
-                st.markdown("<hr style='margin: 2px 0;'>", unsafe_allow_html=True)
-                
-                # En la cuarta columna (Aviso), ponemos el botón de detalle
-                with c4:
-                    if st.button("Ver Ficha", key=f"btn_{nombre_unidad}_{index}", use_container_width=True):
-                        st.session_state.opcion_actual = nombre_unidad
-                        st.rerun()
+                for i in range(num_cols):
+                    if i == num_cols - 1: # Si es la última columna (Aviso/Link)
+                        with cols_f[i]:
+                            # Solo creamos el botón si la unidad existe como pestaña
+                            if unidad_destino in diccionario_hojas and unidad_destino != "HOME":
+                                if st.button("Ver Ficha", key=f"btn_{index}"):
+                                    st.session_state.opcion_actual = unidad_destino
+                                    st.rerun()
+                            else:
+                                cols_f[i].write("-")
+                    else:
+                        cols_f[i].write(row.iloc[i])
                 st.markdown("<hr style='margin: 2px 0;'>", unsafe_allow_html=True)
 
     # --- VISTA DE DETALLE ---
@@ -98,15 +90,14 @@ if diccionario_hojas:
         st.subheader(f"Análisis Técnico: {opcion}")
         
         if opcion in diccionario_hojas:
-            df_ficha = diccionario_hojas[opcion]
-            if "Unnamed: 0" in df_ficha.columns:
-                df_ficha = df_ficha.drop(columns=["Unnamed: 0"])
+            df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0).dropna(how='all', axis=1)
             
-            st.dataframe(df_ficha, use_container_width=True, hide_index=True)
+            # Usamos st.table para que respete al 100% el texto de tus celdas
+            st.table(df_ficha)
             
             ruta_img = f"images/{opcion}.png"
             if os.path.exists(ruta_img):
                 st.markdown("---")
                 st.image(ruta_img, width=500)
 else:
-    st.error("No se encontró el archivo Excel.")
+    st.error("No se encontró el archivo Excel o el formato es incorrecto.")
