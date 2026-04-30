@@ -89,7 +89,7 @@ if diccionario_hojas:
                 ruta_img = f"images/{opcion}.png"
                 if os.path.exists(ruta_img):
                     # Quitamos el 'use_container_width' y definimos un ancho fijo
-                    st.image(ruta_img, width=500) 
+                    st.image(ruta_img, width=200) 
             else:
                 st.error("Hoja no encontrada.")        
         else: # Vista CONTACTO
