@@ -2,65 +2,48 @@ import streamlit as st
 import pandas as pd
 import os
 
-# 1. CONFIGURACIÓN DE PÁGINA
+# 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(
     page_title="Gestión de Inversiones Inmobiliarias", 
     layout="wide", 
     page_icon="🏢"
 )
 
-# 2. ESTILO CSS PERSONALIZADO (Look & Feel moderno)
+# Estilo CSS para mejorar la estética de la tabla manual
 st.markdown("""
     <style>
-    /* Estilo para los botones de la tabla */
     .stButton>button {
-        border-radius: 20px;
-        border: 1px solid #e0e0e0;
-        background-color: #ffffff;
-        color: #1f77b4;
-        transition: all 0.3s ease;
-        padding: 0px;
-        height: 40px;
-        width: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: auto;
+        width: 100%;
+        border-radius: 5px;
+        height: 2em;
+        background-color: #f0f2f6;
     }
-    .stButton>button:hover {
-        border-color: #1f77b4;
-        background-color: #f0f8ff;
-        transform: scale(1.05);
-    }
-    /* Limpieza de líneas divisorias */
     hr {
-        margin: 0.5rem 0rem !important;
-        opacity: 0.3;
-    }
-    /* Estilo de los encabezados de la tabla */
-    .header-text {
-        font-weight: bold;
-        color: #4a4a4a;
-        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. CARGA DE DATOS
+# 2. CARGA DE DATOS
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            return pd.read_excel(archivo, sheet_name=None, dtype=str)
+            # Leemos todas las hojas como texto
+            dict_hojas = pd.read_excel(archivo, sheet_name=None, dtype=str)
+            return dict_hojas
         return None
-    except Exception:
+    except Exception as e:
+        st.error(f"Error de lectura: {e}")
         return None
 
 diccionario_hojas = cargar_datos()
 
-# 4. LÓGICA DE NAVEGACIÓN
+# 3. LÓGICA DE NAVEGACIÓN
 if diccionario_hojas:
+    # Mapeo de pestañas (Case-insensitive)
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
     if "opcion_actual" not in st.session_state:
@@ -68,7 +51,7 @@ if diccionario_hojas:
 
     # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        st.markdown("## Panel de Gestión de Activos")
+        st.markdown("## Panel de Control de Inversiones")
         st.markdown("---")
         
         col_img, col_menu = st.columns([0.6, 1.4], gap="large")
@@ -79,60 +62,68 @@ if diccionario_hojas:
         
         with col_menu:
             if "HOME" in diccionario_hojas:
+                # Limpiamos la hoja HOME de filas totalmente vacías
                 df_home = diccionario_hojas["HOME"].dropna(how='all')
                 
-                # Encabezados con estilo
-                c_head = st.columns([1.5, 0.8, 2])
-                c_head[0].markdown('<p class="header-text">Unidad</p>', unsafe_allow_html=True)
-                c_head[1].markdown('<p class="header-text" style="text-align:center;">Ficha</p>', unsafe_allow_html=True)
-                c_head[2].markdown('<p class="header-text">Contacto</p>', unsafe_allow_html=True)
+                # Encabezados de la tabla (Columnas A, B y C del Excel)
+                c_head = st.columns([1.5, 1, 2])
+                c_head[0].subheader("Unidad")
+                c_head[1].subheader("Detalle")
+                c_head[2].subheader("Contacto")
                 st.markdown("---")
 
+                # Renderizado por fila
                 for index, row in df_home.iterrows():
+                    # Validar que la Columna A tenga datos
                     if pd.isna(row.iloc[0]) or str(row.iloc[0]).strip() == "":
                         continue
                     
-                    fila = st.columns([1.5, 0.8, 2])
+                    fila = st.columns([1.5, 1, 2])
                     
                     # Columna A: Unidad
                     unidad_nombre = str(row.iloc[0]).strip()
                     fila[0].write(f"**{unidad_nombre}**")
                     
-                    # Columna B: Botón Estético (Sin texto, solo Icono)
+                    # Columna B: Botón de Detalle
                     with fila[1]:
                         unidad_key = unidad_nombre.upper()
                         if unidad_key in hojas_reales and unidad_key != "HOME":
-                            # Usamos una lupa 🔍 como icono minimalista
-                            if st.button("🔍", key=f"btn_{index}"):
+                            if st.button("Ver Análisis", key=f"btn_{index}"):
                                 st.session_state.opcion_actual = hojas_reales[unidad_key]
                                 st.rerun()
                         else:
-                            fila[1].markdown('<p style="text-align:center; color:grey;">-</p>', unsafe_allow_html=True)
+                            fila[1].write("n/a")
                     
                     # Columna C: Contacto
                     contacto_info = row.iloc[2] if len(row) > 2 else "-"
                     fila[2].write(contacto_info if pd.notnull(contacto_info) else "-")
                     
                     st.markdown("<hr>", unsafe_allow_html=True)
+            else:
+                st.error("No se encontró la pestaña HOME.")
 
     # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
-        if st.button("← Volver al Panel"):
+        if st.button("← Volver al Panel Principal"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
 
-        st.subheader(f"Análisis Técnico: {opcion}")
+        st.subheader(f"Ficha Técnica: {opcion}")
         
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0).dropna(how='all', axis=1)
+            # Eliminamos cualquier columna 'Unnamed' que ensucie la visualización
             df_ficha = df_ficha.loc[:, ~df_ficha.columns.str.contains('^Unnamed')]
             
-            st.table(df_ficha) # Mantiene el formato de miles manual
+            # st.table para asegurar que los puntos de miles se vean como en el Excel
+            st.table(df_ficha)
             
+            # Imagen de la propiedad
             ruta_img = f"images/{opcion}.png"
             if os.path.exists(ruta_img):
                 st.markdown("---")
                 st.image(ruta_img, width=600)
+
 else:
-    st.error("Error al cargar la base de datos.")
+    st.error("Archivo de datos no encontrado.")
