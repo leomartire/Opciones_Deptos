@@ -95,26 +95,11 @@ if diccionario_hojas is not None:
         st.title("Inversiones Inmobiliarias")
         
         st.markdown("""
-            <div class="dashboard-hero">
-                <h2 style="margin-top:0;">Resumen Ejecutivo</h2>
-                <p style="font-size: 1.1rem; color: #475569; max-width: 800px;">
-                    Plataforma de análisis de activos inmobiliarios para la toma de decisiones financieras. 
-                    Acceda a las métricas detalladas y documentación de cada unidad mediante el panel lateral.
-                </p>
-            </div>
+          
         """, unsafe_allow_html=True)
 
         # Resumen visual minimalista
-        col_info, col_img = st.columns([1, 1.2])
-        with col_info:
-            st.subheader("Estado de la Cartera")
-            st.write(f"📂 **Unidades en análisis:** {len(nombres_hojas)-1}")
-            st.write("📅 **Última actualización:** Abril 2024")
-            st.info("Navegue por el panel izquierdo para ver el detalle de cada activo.")
-            
-        with col_img:
-            if os.path.exists("images/home_portada.png"):
-                st.image("images/home_portada.png", use_container_width=True)
+                st.image("images/HOME.png", use_container_width=True)
 
     # --- DETALLE DE PROPIEDAD (VISTA TÉCNICA) ---
     else:
