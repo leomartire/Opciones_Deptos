@@ -9,43 +9,46 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. ESTILO CSS (Control total de anchos y comportamiento móvil)
+# 2. ESTILO CSS (Ajuste fino para imagen y tabla)
 st.markdown("""
     <style>
-    /* 1. Centrado para PC */
+    /* Centrado para PC */
     @media (min-width: 1024px) {
-        .block-container {
-            max-width: 500px !important;
-            margin: auto !important;
+        .main-app-container {
+            max-width: 450px;
+            margin: 0 auto;
         }
     }
 
-    /* 2. EVITAR QUE LAS COLUMNAS SE APILEN EN MÓVIL */
-    [data-testid="column"] {
+    /* EVITAR APILAMIENTO SOLO EN LA TABLA */
+    /* Usamos un selector más específico para no afectar a la imagen */
+    .row-tabla [data-testid="column"] {
         flex: 1 1 0% !important;
         min-width: 0px !important;
     }
 
-    /* 3. Ajustes de espaciado y textos */
-    .block-container {
-        padding-top: 1rem !important;
+    /* Ajuste de imagen para que no se corte */
+    [data-testid="stImage"] img {
+        max-width: 100%;
+        height: auto;
     }
 
     .stButton>button {
-        height: 24px !important;
-        padding: 0px 5px !important;
+        height: 26px !important;
+        padding: 0px !important;
         font-size: 11px !important;
-        min-height: 24px !important;
         width: 100% !important;
     }
 
     .tabla-texto {
         font-size: 11px !important;
         margin: 0 !important;
-        line-height: 1.5;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-
-    hr { margin: 4px 0 !important; opacity: 0.2; }
+    
+    hr { margin: 8px 0 !important; opacity: 0.2; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -64,23 +67,28 @@ if diccionario_hojas:
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
+    # Envolvemos todo en un div para el control de ancho en PC
+    st.markdown('<div class="main-app-container">', unsafe_allow_html=True)
+
     # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
-        # Usamos columnas para centrar la imagen y que no sea gigante
-        c_img1, c_img2, c_img3 = st.columns([1, 1, 1])
-        with c_img2:
-            if os.path.exists("images/HOME.png"):
-                st.image("images/HOME.png", use_container_width=True)
+        # Imagen Home (Sin columnas para que no se corte)
+        if os.path.exists("images/HOME.png"):
+            st.image("images/HOME.png", use_container_width=True)
+        
+        st.markdown("<h3 style='text-align: center; font-size: 18px;'>Panel de Control</h3>", unsafe_allow_html=True)
 
         if "HOME" in diccionario_hojas:
             df_home = diccionario_hojas["HOME"]
             unidades_vistas = set()
 
-            # Encabezado
+            # Encabezado con clase específica para el CSS
+            st.markdown('<div class="row-tabla">', unsafe_allow_html=True)
             h = st.columns([1, 0.8, 1.2])
-            h[0].markdown("<b style='font-size:11px;'>Unidad</b>", unsafe_allow_html=True)
-            h[1].markdown("<center><b style='font-size:11px;'>Acción</b></center>", unsafe_allow_html=True)
-            h[2].markdown("<div style='text-align:right'><b style='font-size:11px;'>Contacto</b></div>", unsafe_allow_html=True)
+            h[0].write("**Unidad**")
+            h[1].write("**Acción**")
+            h[2].markdown("<div style='text-align:right'>**Contacto**</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
             st.markdown("---")
 
             if df_home is not None:
@@ -90,7 +98,8 @@ if diccionario_hojas:
                         continue
                     unidades_vistas.add(val_unidad)
                     
-                    # FILA (No se apila gracias al CSS del punto 2)
+                    # FILA con clase para evitar el apilamiento
+                    st.markdown('<div class="row-tabla">', unsafe_allow_html=True)
                     fila = st.columns([1, 0.8, 1.2])
                     
                     with fila[0]:
@@ -104,7 +113,7 @@ if diccionario_hojas:
                     with fila[2]:
                         val_contacto = str(row[2]).strip() if len(row) > 2 and pd.notnull(row[2]) else "-"
                         st.markdown(f"<p class='tabla-texto' style='text-align:right'>{val_contacto}</p>", unsafe_allow_html=True)
-                    
+                    st.markdown('</div>', unsafe_allow_html=True)
                     st.markdown("<hr>", unsafe_allow_html=True)
 
     # --- VISTA DE DETALLE ---
@@ -121,5 +130,7 @@ if diccionario_hojas:
             ruta_img = f"images/{opcion}.png"
             if os.path.exists(ruta_img):
                 st.image(ruta_img, use_container_width=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True) # Cierre de main-app-container
 else:
     st.error("Error al cargar Excel.")
