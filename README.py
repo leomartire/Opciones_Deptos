@@ -46,12 +46,11 @@ if diccionario_hojas is not None:
 
     # --- CUERPO DE LA PÁGINA ---
     if opcion == "HOME":
-        st.title("📊 Resumen de Búsqueda")
+        st.title("📊 Lista de oportunidades")
         ruta_home = "images/home_portada.png" 
         if os.path.exists(ruta_home):
             st.image(ruta_home, width=400)
         st.divider()
-        st.subheader("📋 Resumen General")
         st.dataframe(df_clean.astype(str), use_container_width=True, hide_index=True)
 
     else:
