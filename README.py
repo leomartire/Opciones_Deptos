@@ -111,44 +111,51 @@ if diccionario_hojas:
             
             with col_main:
                 st.subheader("Ficha Técnica")
+                
                 if not df_clean.empty:
-                    # 1. Formateo numérico y limpieza de "None"
+                    # 1. Formateo numérico y limpieza de "None" / "HOME"
                     df_viz = df_clean.map(
                         lambda x: "{:,.0f}".format(x).replace(",", ".") 
                         if isinstance(x, (int, float)) and not pd.isna(x) 
-                        else ("" if pd.isna(x) else x)
+                        else ("" if (pd.isna(x) or str(x).strip() == "HOME") else x)
                     )
                     
-                    # 2. Quitar "Unnamed" de los nombres de las columnas
-                    # Esto reemplaza cualquier columna que empiece con 'Unnamed' por un espacio vacío
+                    # 2. Limpieza de encabezados "Unnamed"
                     df_viz.columns = ["" if "Unnamed" in str(col) else col for col in df_viz.columns]
                     
-                    # 3. Renderizar tabla SIN opción de ordenar (column_order=None y uso de st.column_config)
+                    # 3. Renderizar tabla estática (sin ordenamiento)
                     st.dataframe(
                         df_viz, 
                         use_container_width=True, 
                         hide_index=True,
-                        # Desactivamos el ordenamiento mediante la configuración de columnas
                         column_config={col: st.column_config.Column(disabled=True) for col in df_viz.columns}
                     )
                     
-                    # Generación de botones para links
+                    # 4. Generación de botones para links (URLs originales)
+                    st.markdown('<div style="height: 10px;"></div>', unsafe_allow_html=True)
                     for val in df_clean.values.flatten():
                         txt = str(val).strip()
                         if "http" in txt.lower():
-                            url = txt[txt.lower().find("http"):].split()[0]
+                            # Extraer la URL limpia
+                            start = txt.lower().find("http")
+                            url = txt[start:].split()[0].split('\n')[0]
                             st.link_button("🌐 Ver Publicación Original", url, use_container_width=True)
+                else:
+                    st.warning("No se encontraron registros técnicos válidos en esta hoja.")
+
             with col_gallery:
                 st.subheader("Documentación")
-                # Buscamos imagen por nombre de hoja o unidad
+                # Intentamos cargar la imagen correspondiente a la hoja o unidad
                 img_path = f"images/{hoja_actual}.png"
                 if os.path.exists(img_path):
                     st.image(img_path, use_container_width=True)
                 else:
-                    st.info("Fotografía técnica no disponible.")
+                    st.info("Fotografía técnica o plano no disponible para esta unidad.")
         else:
+            # Caso de seguridad por si la navegación falla
             if hoja_actual != "HOME":
-                st.error(f"Error: No existe la hoja '{hoja_actual}' en el archivo Excel.")
+                st.error(f"Error: La hoja de datos '{hoja_actual}' no existe en el Excel.")
 
 else:
-    st.error("Error de Sistema: El archivo 'Opciones_Deptos_LM.xlsx' no es accesible.")
+    # Error principal si no se encuentra el archivo Excel en la raíz
+    st.error("Error de Sistema: El archivo 'Opciones_Deptos_LM.xlsx' no fue detectado.")
