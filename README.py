@@ -77,12 +77,13 @@ if diccionario_hojas:
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-    # --- VISTA HOME ---
+   # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
         st.markdown("<div class='main-container'>", unsafe_allow_html=True)
         
-        # IMAGEN Y TÍTULO
+        # 1. IMAGEN Y TÍTULO
         if os.path.exists("images/HOME.png"):
+            # Usamos columnas para centrar la imagen
             _, col_img_cnt, _ = st.columns([1, 2, 1])
             with col_img_cnt:
                 st.image("images/HOME.png", use_container_width=True)
@@ -94,12 +95,12 @@ if diccionario_hojas:
             df_home = diccionario_hojas["HOME"]
             unidades_vistas = set()
 
-            # ENCABEZADO MANUAL (Simulado para que no se rompa)
+            # 2. ENCABEZADOS (Usamos HTML para asegurar que no se muevan)
             st.markdown("""
-                <div class='tabla-row' style='border-bottom: 2px solid #ccc;'>
-                    <div class='col-unidad'>Unidad</div>
-                    <div class='col-boton'>Acción</div>
-                    <div class='col-contacto'>Contacto</div>
+                <div style='display: flex; font-weight: bold; padding: 5px 0; border-bottom: 2px solid #ccc; font-size: 11px;'>
+                    <div style='width: 35%; text-align: left;'>Unidad</div>
+                    <div style='width: 25%; text-align: center;'>Acción</div>
+                    <div style='width: 40%; text-align: right;'>Contacto</div>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -111,26 +112,27 @@ if diccionario_hojas:
                 
                 unidades_vistas.add(val_unidad)
                 
-                # CREACIÓN DE LA FILA (Mezcla de HTML para texto y Streamlit para el botón)
-                # Esto garantiza que el texto no se mueva, pero el botón funcione
-                c1, c2, c3 = st.columns([1, 0.6, 1.4], gap="small")
+                # 3. FILA DE DATOS (Usamos columnas de Streamlit pero con anchos fijos)
+                col1, col2, col3 = st.columns([1, 0.8, 1.5], gap="small")
                 
-                with c1:
-                    st.markdown(f"<p class='col-unidad'>{val_unidad}</p>", unsafe_allow_html=True)
-                with c2:
+                with col1:
+                    st.markdown(f"<p style='font-size:11px; margin:0; padding-top:4px;'><b>{val_unidad}</b></p>", unsafe_allow_html=True)
+                
+                with col2:
                     key_match = val_unidad.upper()
                     if key_match in hojas_reales:
+                        # Botón pequeño "Ver"
                         if st.button("Ver", key=f"btn_{index}"):
                             st.session_state.opcion_actual = hojas_reales[key_match]
                             st.rerun()
-                with c3:
-                    val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
-                    st.markdown(f"<p class='col-contacto'>{val_contacto}</p>", unsafe_allow_html=True)
                 
-                st.markdown("<hr style='margin: 0px; opacity: 0.1;'>", unsafe_allow_html=True)
+                with col3:
+                    val_contacto = str(row.iloc[2]).strip() if len(row) > 2 and pd.notnull(row.iloc[2]) else "-"
+                    st.markdown(f"<p style='font-size:11px; margin:0; padding-top:4px; text-align: right;'>{val_contacto}</p>", unsafe_allow_html=True)
+                
+                st.markdown("<hr style='margin: 1px 0; opacity: 0.1;'>", unsafe_allow_html=True)
         
         st.markdown("</div>", unsafe_allow_html=True)
-
     # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
