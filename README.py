@@ -9,14 +9,22 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. CARGA DE DATOS (Leemos todo como texto para respetar tu formato manual de Excel)
+# 2. CARGA DE DATOS
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            # Usamos dtype=str para que respete los puntos de miles que pusiste a mano
-            return pd.read_excel(archivo, sheet_name=None, dtype=str)
+            # Leemos como texto para mantener tus puntos de miles manuales
+            dict_hojas = pd.read_excel(archivo, sheet_name=None, dtype=str)
+            
+            # Limpiamos cada hoja de las columnas "Unnamed"
+            for nombre in dict_hojas:
+                df = dict_hojas[nombre]
+                # Filtramos para quedarnos solo con columnas que NO empiecen con "Unnamed"
+                dict_hojas[nombre] = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+            
+            return dict_hojas
         return None
     except Exception:
         return None
@@ -30,7 +38,7 @@ if diccionario_hojas:
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-    # --- VISTA HOME (Panel con Contactos integrados desde el Excel) ---
+    # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
         st.markdown("---")
         col_img, col_menu = st.columns([0.6, 1.4], gap="large")
@@ -42,25 +50,23 @@ if diccionario_hojas:
         with col_menu:
             st.markdown("### Panel de Control de Unidades")
             
-            # Mostramos la tabla HOME que ya tiene los contactos según tu modificación
             df_home = diccionario_hojas["HOME"]
+            # Limpiamos filas vacías que puedan haber quedado en el Excel
+            df_home = df_home.dropna(how='all')
+            
             st.table(df_home)
             
             st.markdown("#### Acceder al Análisis Detallado:")
-            
-            # Generamos botones solo para las propiedades (hojas que no son HOME)
             for unidad in nombres_hojas:
                 if unidad == "HOME":
                     continue
-                
                 if st.button(f"🔍 Ver Ficha Técnica: {unidad}", use_container_width=True):
                     st.session_state.opcion_actual = unidad
                     st.rerun()
 
-    # --- VISTA DE DETALLE (Ficha Técnica) ---
+    # --- VISTA DE DETALLE ---
     else:
         opcion = st.session_state.opcion_actual
-        
         if st.button("← Volver al Inicio"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
@@ -69,19 +75,18 @@ if diccionario_hojas:
         
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion]
-            # Limpiamos vacíos y mostramos (respetando tu formato de texto del Excel)
+            # Limpiamos filas y columnas totalmente vacías
+            df_display = df_ficha.dropna(how='all', axis=0).dropna(how='all', axis=1)
+            
             st.dataframe(
-                df_ficha.dropna(how='all', axis=0).dropna(how='all', axis=1), 
+                df_display, 
                 use_container_width=True, 
                 hide_index=True
             )
             
-            # Imagen de la propiedad
             ruta_img = f"images/{opcion}.png"
             if os.path.exists(ruta_img):
                 st.markdown("---")
                 st.image(ruta_img, width=500)
-        else:
-            st.error("No se encontró la información detallada.")
 else:
     st.error("No se pudo cargar el archivo 'Opciones_Deptos_LM.xlsx'.")
