@@ -134,10 +134,11 @@ if diccionario_hojas:
                     df_viz.columns = nuevos_columnas
                     
                     # 4. Renderizar tabla con configuración de seguridad
-                    st.dataframe(
+                    st.data_editor(
                         df_viz, 
                         use_container_width=True, 
-                        hide_index=True
+                        hide_index=True,
+                        key=f"editor_{opcion}" # Clave única para que no haya conflictos
                     )
                     
                     # 5. Generación de botones para links
