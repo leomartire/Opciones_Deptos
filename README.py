@@ -53,10 +53,12 @@ if diccionario_hojas:
         st.markdown("---")
         
         col_img, col_menu = st.columns([0.6, 1.4], gap="large")
-        
-        with col_img:
+        col_izq_img, col_cnt_img, col_der_img = st.columns([1, 2, 1])
+        with col_cnt_img:
             if os.path.exists("images/HOME.png"):
-                st.image("images/HOME.png", use_container_width=True)
+        st.image("images/HOME.png", use_container_width=True)
+                if os.path.exists("images/HOME.png"):
+        st.image("images/HOME.png", use_container_width=True)
         
         with col_menu:
             if "HOME" in diccionario_hojas:
@@ -72,6 +74,7 @@ if diccionario_hojas:
                 unidades_vistas = set()
 
                 for index, row in df_home.iterrows():
+                    col_izq_tab, col_cnt_tab, col_der_tab = st.columns([1, 4, 1]
                     # Leemos por posición: Columna 0 (A) y Columna 2 (C)
                     val_unidad = str(row.iloc[0]).strip() if pd.notnull(row.iloc[0]) else ""
                     
