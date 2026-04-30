@@ -102,7 +102,6 @@ if diccionario_hojas:
             h[1].markdown("<center><b style='font-size:12px;'>Acción</b></center>", unsafe_allow_html=True)
             h[2].markdown("<div style='text-align:right'><b style='font-size:12px;'>Contacto</b></div>", unsafe_allow_html=True)
             st.markdown("<hr style='border: 1px solid #333; margin: 2px 0;'>", unsafe_allow_html=True)
-
             if df_home is not None:
                 for index, row in df_home.iterrows():
                     val_unidad = str(row[0]).strip() if pd.notnull(row[0]) else ""
