@@ -9,13 +9,14 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 2. CARGA DE DATOS (Excel Local)
+# 2. CARGA DE DATOS (Leemos todo como texto para respetar tu formato manual de Excel)
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     try:
         if os.path.exists(archivo):
-            return pd.read_excel(archivo, sheet_name=None)
+            # Usamos dtype=str para que respete los puntos de miles que pusiste a mano
+            return pd.read_excel(archivo, sheet_name=None, dtype=str)
         return None
     except Exception:
         return None
@@ -29,7 +30,7 @@ if diccionario_hojas:
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-    # --- VISTA HOME ---
+    # --- VISTA HOME (Panel con Contactos integrados desde el Excel) ---
     if st.session_state.opcion_actual == "HOME":
         st.markdown("---")
         col_img, col_menu = st.columns([0.6, 1.4], gap="large")
@@ -40,71 +41,47 @@ if diccionario_hojas:
         
         with col_menu:
             st.markdown("### Panel de Control de Unidades")
+            
+            # Mostramos la tabla HOME que ya tiene los contactos según tu modificación
+            df_home = diccionario_hojas["HOME"]
+            st.table(df_home)
+            
+            st.markdown("#### Acceder al Análisis Detallado:")
+            
+            # Generamos botones solo para las propiedades (hojas que no son HOME)
             for unidad in nombres_hojas:
-                if unidad == "HOME" or unidad == "Contacto":
+                if unidad == "HOME":
                     continue
                 
-                c1, c2, c3 = st.columns([1.5, 1, 1])
-                with c1:
-                    st.markdown(f"<div style='padding-top: 10px;'><strong>🏢 {unidad}</strong></div>", unsafe_allow_html=True)
-                with c2:
-                    if st.button(f"🔍 Ficha", key=f"det_{unidad}", use_container_width=True):
-                        st.session_state.opcion_actual = unidad
-                        st.session_state.vista_interna = "FICHA"
-                        st.rerun()
-                with c3:
-                    if st.button(f"📞 Contacto", key=f"cont_{unidad}", use_container_width=True):
-                        st.session_state.opcion_actual = unidad
-                        st.session_state.vista_interna = "CONTACTO"
-                        st.rerun()
-                st.markdown("<hr style='margin: 5px 0;'>", unsafe_allow_html=True)
+                if st.button(f"🔍 Ver Ficha Técnica: {unidad}", use_container_width=True):
+                    st.session_state.opcion_actual = unidad
+                    st.rerun()
 
-    # --- VISTA DE DETALLE ---
+    # --- VISTA DE DETALLE (Ficha Técnica) ---
     else:
         opcion = st.session_state.opcion_actual
-        vista = st.session_state.get("vista_interna", "FICHA")
         
-        if st.button("← Volver al Menú Principal"):
+        if st.button("← Volver al Inicio"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
 
-        if vista == "FICHA":
-            st.subheader(f"Análisis Técnico: {opcion}")
-            if opcion in diccionario_hojas:
-                df = diccionario_hojas[opcion]
-                # Copiamos para no romper el original
-                df_visual = df.dropna(how='all', axis=0).dropna(how='all', axis=1).copy()
-
-                # --- EL TRUCO DEL FORMATO DEFINITIVO ---
-                for col in df_visual.columns:
-                    # Si la columna es numérica, la transformamos a texto con puntos
-                    if pd.api.types.is_numeric_dtype(df_visual[col]):
-                        df_visual[col] = df_visual[col].apply(
-                            lambda x: f"{int(x):,}".replace(",", ".") if pd.notnull(x) else ""
-                        )
-
-                # Mostramos la tabla (ahora son strings alineados)
-                st.dataframe(
-                    df_visual, 
-                    use_container_width=True, 
-                    hide_index=True
-                )
-                
-                # Imagen con tamaño controlado
-                ruta_img = f"images/{opcion}.png"
-                if os.path.exists(ruta_img):
-                    st.markdown("---")
-                    st.image(ruta_img, width=500)
-            else:
-                st.error("No se encontró la hoja de datos.")
-        else: # Vista CONTACTO
-            st.subheader(f"Datos de Contacto: {opcion}")
-            if "Contacto" in diccionario_hojas:
-                df_c = diccionario_hojas["Contacto"]
-                # Filtro por propiedad si existe la columna
-                df_res = df_c[df_c['Propiedad'] == opcion] if 'Propiedad' in df_c.columns else df_c
-                st.table(df_res)
-            else:
-                st.info("Pestaña 'Contacto' no encontrada en el Excel.")
+        st.subheader(f"Análisis Técnico: {opcion}")
+        
+        if opcion in diccionario_hojas:
+            df_ficha = diccionario_hojas[opcion]
+            # Limpiamos vacíos y mostramos (respetando tu formato de texto del Excel)
+            st.dataframe(
+                df_ficha.dropna(how='all', axis=0).dropna(how='all', axis=1), 
+                use_container_width=True, 
+                hide_index=True
+            )
+            
+            # Imagen de la propiedad
+            ruta_img = f"images/{opcion}.png"
+            if os.path.exists(ruta_img):
+                st.markdown("---")
+                st.image(ruta_img, width=500)
+        else:
+            st.error("No se encontró la información detallada.")
 else:
-    st.error("No se encontró el archivo 'Opciones_Deptos_LM.xlsx'.")
+    st.error("No se pudo cargar el archivo 'Opciones_Deptos_LM.xlsx'.")
