@@ -18,7 +18,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS FINAL (Limpieza absoluta)
+# 3. CSS FINAL
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -66,18 +66,20 @@ st.markdown("""
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     if os.path.exists(archivo):
+        # Cargamos el Excel completo
         return pd.read_excel(archivo, sheet_name=None, header=None, dtype=str)
     return None
 
 diccionario_hojas = cargar_datos()
 
 if diccionario_hojas:
+    # Mapeo de hojas para navegación (Zeylicovich & Arzumanián 2026)
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-    # --- VISTA PANEL PRINCIPAL (HOME) ---
+    # --- VISTA PANEL PRINCIPAL ---
     if st.session_state.opcion_actual == "HOME":
         img_64 = get_base64("images/HOME.png")
         if img_64:
@@ -91,28 +93,31 @@ if diccionario_hojas:
             st.markdown("<hr style='margin: 0 0 8px 0; opacity: 0.3; border-top: 1px solid #333;'>", unsafe_allow_html=True)
             
             for index, row in df_home.iterrows():
-                val_unidad = str(row[0]).strip() if pd.notnull(row[0]) else ""
+                # Obtenemos el valor de la primera columna
+                val_raw = str(row[0]).strip() if pd.notnull(row[0]) else ""
                 
-                # REGLA DE EXCLUSIÓN TOTAL:
-                # No mostramos "HOME", ni números de índice, ni celdas vacías.
-                if (val_unidad == "" or 
-                    val_unidad.upper() in ["UNIDAD", "HOME", "0", "1", "2"] or 
-                    val_unidad.isdigit() or 
-                    val_unidad in unidades_vistas):
+                # FILTRO DE SEGURIDAD EXTREMO:
+                # Si la palabra es "HOME", "UNIDAD", o es un número solo, la saltamos.
+                if (not val_raw or 
+                    val_raw.upper() == "HOME" or 
+                    val_raw.upper() == "UNIDAD" or 
+                    val_raw.isdigit() or 
+                    val_raw in unidades_vistas):
                     continue
                 
-                unidades_vistas.add(val_unidad)
+                unidades_vistas.add(val_raw)
                 
                 col1, col2, col3 = st.columns([1.8, 0.7, 1.3]) 
                 with col1: 
-                    st.markdown(f"<p class='texto-base'>{val_unidad}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-base'>{val_raw}</p>", unsafe_allow_html=True)
                 with col2:
-                    if st.button("VER", key=f"btn_nav_{index}"):
-                        st.session_state.opcion_actual = hojas_reales.get(val_unidad.upper(), "HOME")
+                    if st.button("VER", key=f"btn_v_{index}"):
+                        st.session_state.opcion_actual = hojas_reales.get(val_raw.upper(), "HOME")
                         st.rerun()
                 with col3:
                     val_contacto = str(row[2]).strip() if len(row) > 2 else "-"
                     st.markdown(f"<p class='texto-base' style='text-align:right;'>{val_contacto}</p>", unsafe_allow_html=True)
+                
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
     else:
@@ -127,6 +132,8 @@ if diccionario_hojas:
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].copy()
             url_aviso = None
+            
+            # Buscar link en la ficha
             for col in df_ficha.columns:
                 mask = df_ficha[col].str.contains("http|www", na=False)
                 if mask.any():
@@ -134,13 +141,13 @@ if diccionario_hojas:
                     df_ficha.loc[mask, col] = pd.NA
                     break
             
-            df_clean = df_ficha.iloc[1:].dropna(how='all')
-            st.table(df_clean)
+            # Mostrar tabla sin índices
+            st.table(df_ficha.iloc[1:].dropna(how='all'))
             
             if url_aviso:
                 st.markdown(f'<a href="{url_aviso}" target="_blank" class="boton-aviso">VER AVISO</a>', unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("← VOLVER AL PANEL", key="final_back_btn"):
+        if st.button("← VOLVER AL PANEL", key="btn_volver_final"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
