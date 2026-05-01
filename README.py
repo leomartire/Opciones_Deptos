@@ -157,9 +157,8 @@ if diccionario_hojas:
         with col_ws:
             num_ws = "5491168807566"
             # Reemplaza con tu URL real de Streamlit
-            url_base = "https://tu-app-revaloriza.streamlit.app" 
+            url_base = "https://inversiones-inmobiliarias.streamlit.app/" 
             link_ficha = f"{url_base}?unidad={nombre_hoja.replace(' ', '%20')}"
             txt_ws = f"Hola! Me interesa esta propiedad: {link_ficha}"
             link_ws = f"https://wa.me/{num_ws}?text={txt_ws.replace(' ', '%20')}"
-            st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
             st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
