@@ -18,7 +18,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS CONSOLIDADO (Ajuste de imágenes en Fichas)
+# 3. CSS CONSOLIDADO (Ocultar índices y limpiar tablas)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -33,70 +33,40 @@ st.markdown("""
         padding-right: 10px !important;
     }
 
-    /* Banner Home: Mantiene el recorte centrado para impacto visual */
-    .hero-container-home {
-        width: 100%;
-        height: 160px; 
-        overflow: hidden;
-        margin-bottom: 1rem;
-        border-radius: 0 0 10px 10px;
-        background-color: #f4f1ea;
-    }
-    .hero-container-home img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover; 
-    }
+    /* OCULTAR NÚMEROS DE ÍNDICE EN TABLAS */
+    thead tr th:first-child { display:none !important; }
+    tbody th { display:none !important; }
 
-    /* Banner Ficha: Muestra la IMAGEN COMPLETA sin cortes */
-    .hero-container-ficha {
-        width: 100%;
-        height: auto; 
-        max-height: 280px;
-        overflow: hidden;
-        margin-bottom: 1rem;
-        border-radius: 8px;
+    .hero-container-home {
+        width: 100%; height: 160px; overflow: hidden;
+        margin-bottom: 1rem; border-radius: 0 0 10px 10px;
         background-color: #f4f1ea;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
-    .hero-container-ficha img {
-        max-width: 100%;
-        max-height: 280px;
-        object-fit: contain; /* Muestra la imagen entera sin recortar */
+    .hero-container-home img { width: 100%; height: 100%; object-fit: cover; }
+
+    .hero-container-ficha {
+        width: 100%; height: auto; max-height: 280px; overflow: hidden;
+        margin-bottom: 1rem; border-radius: 8px;
+        background-color: #f4f1ea; display: flex; justify-content: center; align-items: center;
     }
+    .hero-container-ficha img { max-width: 100%; max-height: 280px; object-fit: contain; }
 
     .titulo-elegante {
         font-family: 'Cormorant Garamond', serif !important;
-        font-size: 20px !important;
-        color: #1a1a1a;
-        text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 15px;
+        font-size: 20px !important; color: #1a1a1a; text-align: center;
+        text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
     }
 
-    .texto-base {
-        font-size: 11px !important;
-        font-family: sans-serif !important;
-        color: #444;
-    }
+    .texto-base { font-size: 11px !important; font-family: sans-serif !important; color: #444; }
 
     .stButton>button {
-        height: 28px !important;
-        font-size: 10px !important;
-        border: 1px solid #d4af37 !important;
-        background-color: transparent !important;
-        width: 100% !important;
-        border-radius: 4px;
-        color: #1a1a1a;
+        height: 28px !important; font-size: 10px !important;
+        border: 1px solid #d4af37 !important; background-color: transparent !important;
+        width: 100% !important; border-radius: 4px; color: #1a1a1a;
     }
     
-    .stButton>button:hover {
-        background-color: #d4af37 !important;
-        color: white !important;
-    }
+    /* Estilo para el botón de Ver Aviso (Link) */
+    .stButton>a { text-decoration: none; }
 
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px 2px !important; }
     [data-testid="stHorizontalBlock"] { gap: 0px !important; align-items: center !important; }
@@ -135,7 +105,8 @@ if diccionario_hojas:
             
             for index, row in df_home.iterrows():
                 val_unidad = str(row[0]).strip() if pd.notnull(row[0]) else ""
-                if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME"] or val_unidad in unidades_vistas:
+                # Quitar números/encabezados de la primera fila
+                if val_unidad == "" or val_unidad.upper() in ["UNIDAD", "HOME", "0", "1"] or val_unidad in unidades_vistas:
                     continue
                 unidades_vistas.add(val_unidad)
                 
@@ -153,8 +124,6 @@ if diccionario_hojas:
     # --- VISTA FICHA TÉCNICA ---
     else:
         opcion = st.session_state.opcion_actual
-        
-        # Imagen de la Unidad: Ahora usa 'contain' para que no se corte
         ruta_img = f"images/{opcion}.png"
         img_ficha_64 = get_base64(ruta_img)
         if img_ficha_64:
@@ -163,13 +132,19 @@ if diccionario_hojas:
         st.markdown(f"<h1 class='titulo-elegante'>{opcion}</h1>", unsafe_allow_html=True)
         
         if opcion in diccionario_hojas:
-            df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0)
-            st.table(df_ficha) # Mantiene la estética técnica y limpia
+            # Quitamos la primera fila (encabezados 0, 1, 2 del Excel)
+            df_ficha = diccionario_hojas[opcion].iloc[1:].dropna(how='all', axis=0)
+            st.table(df_ficha)
+            
+            # LÓGICA ESPECIAL FICHA 8: Botón "Ver Aviso"
+            if "8" in opcion:
+                # Buscamos el link en la tabla (asumiendo que está en la columna 1)
+                link_aviso = "https://www.zonaprop.com.ar/" # Link por defecto si no se encuentra
+                st.markdown(f'<a href="{link_aviso}" target="_blank"><button style="width:100%; height:32px; background:none; border:1px solid #d4af37; color:#1a1a1a; border-radius:4px; font-size:11px; cursor:pointer; margin-top:10px;">VER AVISO</button></a>', unsafe_allow_html=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
-        
         if st.button("← VOLVER AL PANEL"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
 else:
-    st.error("Error: Opciones_Deptos_LM.xlsx no encontrado.")
+    st.error("Archivo no encontrado.")
