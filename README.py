@@ -159,7 +159,7 @@ if diccionario_hojas:
         with col_ws:
             num_ws = "5491168807566"
             # RECUERDA CAMBIAR ESTA URL POR LA DE TU APP EN STREAMLIT CLOUD
-            url_base = "https://tu-app-revaloriza.streamlit.app" 
+            url_base = "https://inversiones-inmobiliarias.streamlit.app" 
             
             # Codificación completa para evitar que WhatsApp rompa el enlace
             unidad_url = urllib.parse.quote(nombre_hoja)
@@ -170,5 +170,4 @@ if diccionario_hojas:
             
             link_ws = f"https://wa.me/{num_ws}?text={msg_url}"
             
-            st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
             st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
