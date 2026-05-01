@@ -4,11 +4,10 @@ import os
 import base64
 import urllib.parse
 
-# 1. CONFIGURACIÓN DE IDENTIDAD (EDITA ESTO)
-# Cambia la URL_BASE_APP por la dirección que te da Streamlit al publicar.
-# Cambia la URL_IMAGEN_PREVIEW por el link "Raw" de tu imagen en GitHub.
-URL_BASE_APP = "https://inversiones-inmobiliarias.streamlit.app/"
-URL_IMAGEN_PREVIEW = "https://github.com/leomartire/Opciones_Deptos/blob/deee0c02a8c18a8a702adf350ede44f2b27e4bf8/images/HOME.png"
+# 1. CONFIGURACIÓN DE IDENTIDAD
+# He corregido la URL al formato Raw para que WhatsApp pueda leer la imagen.
+URL_BASE_APP = "https://tu-app-revaloriza.streamlit.app"
+URL_IMAGEN_PREVIEW = "https://raw.githubusercontent.com/leomartire/Opciones_Deptos/main/images/HOME.png"
 
 # 2. FUNCIÓN PARA PROCESAR IMÁGENES LOCALES
 def get_base64(bin_file):
@@ -26,12 +25,13 @@ st.set_page_config(
 )
 
 # Meta Tags para que WhatsApp reconozca la imagen de vista previa
+# Eliminadas las llaves internas que causaban el SyntaxError
 st.markdown(f"""
     <head>
     <meta property="og:title" content="Zeylicovich & Arzumanián | Cartera 2026">
     <meta property="og:description" content="Propiedades exclusivas y proyectos de Flipping en CABA.">
-    <meta property="og:image" content="{https://github.com/leomartire/Opciones_Deptos/blob/deee0c02a8c18a8a702adf350ede44f2b27e4bf8/images/HOME.png/}">
-    <meta property="og:url" content="{https://inversiones-inmobiliarias.streamlit.app/}">
+    <meta property="og:image" content="{URL_IMAGEN_PREVIEW}">
+    <meta property="og:url" content="{URL_BASE_APP}">
     <meta property="og:type" content="website">
     </head>
     """, unsafe_allow_html=True)
@@ -52,7 +52,7 @@ if "unidad" in st.query_params:
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 6. ESTILOS CSS UNIFICADOS (Cormorant Garamond + Simetría) ---
+# --- 6. ESTILOS CSS UNIFICADOS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
@@ -75,7 +75,6 @@ st.markdown("""
 
     thead, tbody th { display: none !important; }
 
-    /* BOTONES UNIFICADOS (38px de alto, 14px de fuente) */
     .stButton>button, .btn-whatsapp, .boton-aviso {
         height: 38px !important; 
         line-height: 38px !important;
@@ -190,6 +189,7 @@ if diccionario_hojas:
         with col_ws:
             num_ws = "5491168807566"
             unidad_url = urllib.parse.quote(nombre_hoja)
-            link_ficha = f"{https://inversiones-inmobiliarias.streamlit.app/}?unidad={unidad_url}"
-            msg_url = urllib.parse.quote(f"Hola! Me interesa esta propiedad: {link_ficha}")            
+            link_ficha = f"{URL_BASE_APP}?unidad={unidad_url}"
+            msg_url = urllib.parse.quote(f"Hola! Me interesa esta propiedad: {link_ficha}")
+            
             st.markdown(f'<a href="https://wa.me/{num_ws}?text={msg_url}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
