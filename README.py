@@ -35,7 +35,7 @@ if "unidad" in st.query_params:
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 5. ESTILOS CSS UNIFICADOS (Cormorant Garamond) ---
+# --- 5. ESTILOS CSS UNIFICADOS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
@@ -46,45 +46,44 @@ st.markdown("""
         margin: 0 auto !important; padding-left: 10px !important; padding-right: 10px !important;
     }
     
-    /* UNIFICACIÓN DE TIPOGRAFÍA GLOBAL */
+    /* FUENTE GLOBAL */
     html, body, [class*="css"], .stMarkdown, p, div {
         font-family: 'Cormorant Garamond', serif !important;
     }
 
-    /* ESTILO ESPECÍFICO PARA TABLAS (FICHAS) */
+    /* TABLAS DE FICHA */
     .stTable td {
         font-family: 'Cormorant Garamond', serif !important;
         font-size: 14px !important;
         color: #444 !important;
-        padding: 4px !important;
     }
 
     thead, tbody th { display: none !important; }
 
+    /* UNIFICACIÓN DE TODOS LOS BOTONES (VER, VOLVER Y OTROS) */
+    .stButton>button, .stButton>button p {
+        font-family: 'Cormorant Garamond', serif !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+    }
+
     .stButton>button {
         height: 32px !important; width: 100% !important;
-        font-size: 10px !important; border-radius: 4px !important;
-        font-family: sans-serif !important; font-weight: 600 !important;
-        text-transform: uppercase !important; letter-spacing: 1px !important;
+        font-size: 12px !important; border-radius: 4px !important;
         border: none !important; background-color: #e0e0e0 !important; color: #1a1a1a !important;
     }
 
-    .btn-whatsapp {
-        height: 32px !important; background-color: #25D366 !important;
-        color: white !important; text-align: center; line-height: 32px !important;
-        border-radius: 4px; font-family: sans-serif; font-size: 10px !important;
-        font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
-        text-decoration: none; display: block; width: 100%;
+    /* BOTONES ESPECIALES (WHATSAPP Y AVISO) */
+    .btn-whatsapp, .boton-aviso {
+        height: 32px !important; text-align: center; line-height: 32px !important;
+        border-radius: 4px; font-family: 'Cormorant Garamond', serif !important; 
+        font-size: 12px !important; font-weight: 600; text-transform: uppercase; 
+        letter-spacing: 1px; text-decoration: none; display: block; width: 100%;
     }
 
-    .boton-aviso {
-        display: block; width: 100%; height: 32px !important;
-        line-height: 32px !important; text-align: center;
-        background-color: #e0e0e0 !important; color: #1a1a1a !important;
-        border-radius: 4px; font-size: 10px !important;
-        text-decoration: none; font-family: sans-serif; margin-top: 10px;
-        font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
-    }
+    .btn-whatsapp { background-color: #25D366 !important; color: white !important; }
+    .boton-aviso { background-color: #e0e0e0 !important; color: #1a1a1a !important; margin-top: 10px; }
 
     .hero-container {
         width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
@@ -98,13 +97,10 @@ st.markdown("""
         text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
     }
     
-    /* AJUSTE TEXTO HOME */
     .texto-home { 
         font-size: 16px !important; 
         font-family: 'Cormorant Garamond', serif !important; 
-        color: #1a1a1a; 
-        margin: 0 !important; 
-        font-weight: 500;
+        color: #1a1a1a; margin: 0 !important; font-weight: 500;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -112,7 +108,6 @@ st.markdown("""
 if diccionario_hojas:
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
 
-    # --- VISTA: HOME ---
     if st.session_state.opcion_actual == "HOME":
         img_64 = get_base64("images/HOME.png")
         if img_64:
@@ -142,7 +137,6 @@ if diccionario_hojas:
                     st.markdown(f"<p class='texto-home' style='text-align:right; line-height:32px;'>{val_cont}</p>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
-    # --- VISTA: FICHA TÉCNICA ---
     else:
         opcion = st.session_state.opcion_actual
         nombre_hoja = hojas_reales.get(opcion.upper(), opcion)
@@ -163,7 +157,6 @@ if diccionario_hojas:
                     df_ficha.loc[mask, col] = pd.NA 
                     break
             
-            # Renderizamos la tabla (ahora con Cormorant aplicada vía CSS)
             st.table(df_ficha.iloc[1:].dropna(how='all'))
             
             if url_aviso:
@@ -181,9 +174,7 @@ if diccionario_hojas:
         with col_ws:
             num_ws = "5491168807566"
             url_base = "https://inversiones-inmobiliarias.streamlit.app/" 
-            
             unidad_url = urllib.parse.quote(nombre_hoja)
             link_ficha = f"{url_base}?unidad={unidad_url}"
             msg_url = urllib.parse.quote(f"Hola! Me interesa esta propiedad: {link_ficha}")
-            
             st.markdown(f'<a href="https://wa.me/{num_ws}?text={msg_url}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
