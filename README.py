@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import base64
-import urllib.parse  # Librería para codificación de URLs robusta
+import urllib.parse
 
 # 1. FUNCIÓN PARA PROCESAR IMÁGENES LOCALES
 def get_base64(bin_file):
@@ -29,16 +29,16 @@ def cargar_datos():
 
 diccionario_hojas = cargar_datos()
 
-# --- 4. LÓGICA DE NAVEGACIÓN (Deep Linking) ---
+# --- 4. LÓGICA DE NAVEGACIÓN ---
 if "unidad" in st.query_params:
     st.session_state.opcion_actual = st.query_params["unidad"]
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 5. ESTILOS CSS ---
+# --- 5. ESTILOS CSS UNIFICADOS (Cormorant Garamond) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
     
     .stApp { margin-top: -70px; } 
     .block-container {
@@ -46,6 +46,19 @@ st.markdown("""
         margin: 0 auto !important; padding-left: 10px !important; padding-right: 10px !important;
     }
     
+    /* UNIFICACIÓN DE TIPOGRAFÍA GLOBAL */
+    html, body, [class*="css"], .stMarkdown, p, div {
+        font-family: 'Cormorant Garamond', serif !important;
+    }
+
+    /* ESTILO ESPECÍFICO PARA TABLAS (FICHAS) */
+    .stTable td {
+        font-family: 'Cormorant Garamond', serif !important;
+        font-size: 14px !important;
+        color: #444 !important;
+        padding: 4px !important;
+    }
+
     thead, tbody th { display: none !important; }
 
     .stButton>button {
@@ -81,10 +94,18 @@ st.markdown("""
 
     .titulo-elegante {
         font-family: 'Cormorant Garamond', serif !important;
-        font-size: 20px !important; color: #1a1a1a; text-align: center;
+        font-size: 22px !important; color: #1a1a1a; text-align: center;
         text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
     }
-    .texto-base { font-size: 11px !important; font-family: sans-serif !important; color: #444; margin: 0 !important; }
+    
+    /* AJUSTE TEXTO HOME */
+    .texto-home { 
+        font-size: 16px !important; 
+        font-family: 'Cormorant Garamond', serif !important; 
+        color: #1a1a1a; 
+        margin: 0 !important; 
+        font-weight: 500;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -107,9 +128,9 @@ if diccionario_hojas:
                 if not val_raw or val_raw.upper() in ["UNIDAD", "HOME"] or val_raw.isdigit():
                     continue
                 
-                col1, col2, col3 = st.columns([1.9, 0.7, 1.1]) 
+                col1, col2, col3 = st.columns([1.8, 0.7, 1.2]) 
                 with col1: 
-                    st.markdown(f"<p class='texto-base' style='line-height:32px;'>{val_raw}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-home' style='line-height:32px;'>{val_raw}</p>", unsafe_allow_html=True)
                 with col2:
                     if st.button("VER", key=f"btn_{index}"):
                         nombre_final = hojas_reales.get(val_raw.upper(), val_raw)
@@ -118,7 +139,7 @@ if diccionario_hojas:
                         st.rerun()
                 with col3:
                     val_cont = str(row[2]).strip() if len(row) > 2 else "-"
-                    st.markdown(f"<p class='texto-base' style='text-align:right; line-height:32px;'>{val_cont}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-home' style='text-align:right; line-height:32px;'>{val_cont}</p>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
     # --- VISTA: FICHA TÉCNICA ---
@@ -142,6 +163,7 @@ if diccionario_hojas:
                     df_ficha.loc[mask, col] = pd.NA 
                     break
             
+            # Renderizamos la tabla (ahora con Cormorant aplicada vía CSS)
             st.table(df_ficha.iloc[1:].dropna(how='all'))
             
             if url_aviso:
@@ -158,16 +180,10 @@ if diccionario_hojas:
         
         with col_ws:
             num_ws = "5491168807566"
-            # RECUERDA CAMBIAR ESTA URL POR LA DE TU APP EN STREAMLIT CLOUD
-            url_base = "https://inversiones-inmobiliarias.streamlit.app" 
+            url_base = "https://inversiones-inmobiliarias.streamlit.app/" 
             
-            # Codificación completa para evitar que WhatsApp rompa el enlace
             unidad_url = urllib.parse.quote(nombre_hoja)
             link_ficha = f"{url_base}?unidad={unidad_url}"
+            msg_url = urllib.parse.quote(f"Hola! Me interesa esta propiedad: {link_ficha}")
             
-            msg = f"Hola! Me interesa esta propiedad del Proyecto 2026: {link_ficha}"
-            msg_url = urllib.parse.quote(msg)
-            
-            link_ws = f"https://wa.me/{num_ws}?text={msg_url}"
-            
-            st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
+            st.markdown(f'<a href="https://wa.me/{num_ws}?text={msg_url}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
