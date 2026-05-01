@@ -18,40 +18,78 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS COMPLETO
+# 3. CSS UNIFICADO (Botones Premium)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
     
+    /* ADVERTENCIA MÓVIL */
     .orientacion-mensaje {
         display: none; background-color: #1a1a1a; color: #d4af37;
         text-align: center; padding: 15px; font-family: sans-serif;
         font-weight: bold; font-size: 13px; border-bottom: 2px solid #d4af37;
         width: 100%; position: fixed; top: 0; left: 0; z-index: 999999;
     }
-
     @media only screen and (max-width: 900px) and (orientation: portrait) {
         .orientacion-mensaje { display: block !important; }
     }
 
+    /* ESTRUCTURA */
     .stApp { margin-top: -70px; } 
     .block-container {
         padding-top: 2rem !important; max-width: 450px !important; 
         margin: 0 auto !important; padding-left: 10px !important; padding-right: 10px !important;
     }
     
-    thead { display: none !important; }
-    tbody th { display: none !important; }
-    
-    /* BOTONES GENERALES (VER y VOLVER) */
+    thead, tbody th { display: none !important; }
+
+    /* UNIFICACIÓN DE BOTONES (ESTÁNDAR 28px de alto) */
     .stButton>button {
-        height: 24px !important; width: 100% !important;
-        font-size: 9px !important; border: 1px solid #d4af37 !important;
-        background-color: transparent !important; border-radius: 2px !important;
-        color: #1a1a1a; padding: 0px !important; line-height: 1 !important;
-        text-transform: uppercase;
+        height: 28px !important; 
+        width: 100% !important;
+        font-size: 10px !important; 
+        border-radius: 4px !important;
+        font-family: sans-serif !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none !important;
     }
 
+    /* Color Botón VER (Home) */
+    div.stButton > button {
+        background-color: #d4af37 !important; /* Dorado */
+        color: white !important;
+    }
+
+    /* Color Botón VOLVER (Ficha) */
+    div.stButton > button[kind="secondary"] {
+        background-color: #4a4a4a !important; /* Gris Oscuro Elegante */
+        color: white !important;
+    }
+
+    /* Estilo Botón WhatsApp (HTML) */
+    .btn-whatsapp {
+        height: 28px;
+        background-color: #25D366;
+        color: white;
+        text-align: center;
+        line-height: 28px;
+        border-radius: 4px;
+        font-family: sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+        display: block;
+    }
+
+    /* CONTENEDORES DE IMAGEN */
     .hero-container-home, .hero-container-ficha {
         width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
         overflow: hidden; margin-bottom: 1rem; display: flex; justify-content: center;
@@ -70,10 +108,10 @@ st.markdown("""
 
     .boton-aviso {
         display: block; width: 100%; text-align: center;
-        background-color: transparent; border: 1px solid #d4af37;
-        color: #1a1a1a; padding: 8px 0; border-radius: 4px;
+        background-color: #1a1a1a; color: #d4af37; /* Negro y Dorado */
+        padding: 10px 0; border-radius: 4px;
         font-size: 11px; text-decoration: none; font-family: sans-serif;
-        margin-top: 10px; font-weight: 500;
+        margin-top: 10px; font-weight: 600; text-transform: uppercase;
     }
     </style>
     
@@ -114,16 +152,16 @@ if diccionario_hojas:
                     continue
                 unidades_vistas.add(val_raw)
                 
-                col1, col2, col3 = st.columns([2.0, 0.6, 1.1]) 
+                col1, col2, col3 = st.columns([1.9, 0.7, 1.1]) 
                 with col1: 
-                    st.markdown(f"<p class='texto-base' style='line-height:24px;'>{val_raw}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-base' style='line-height:28px;'>{val_raw}</p>", unsafe_allow_html=True)
                 with col2:
                     if st.button("VER", key=f"btn_{index}"):
                         st.session_state.opcion_actual = hojas_reales.get(val_raw.upper(), "HOME")
                         st.rerun()
                 with col3:
                     val_cont = str(row[2]).strip() if len(row) > 2 else "-"
-                    st.markdown(f"<p class='texto-base' style='text-align:right; line-height:24px;'>{val_cont}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-base' style='text-align:right; line-height:28px;'>{val_cont}</p>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
     else:
@@ -145,34 +183,19 @@ if diccionario_hojas:
                     break
             st.table(df_ficha.iloc[1:].dropna(how='all'))
             if url_aviso:
-                st.markdown(f'<a href="{url_aviso}" target="_blank" class="boton-aviso">VER AVISO</a>', unsafe_allow_html=True)
+                st.markdown(f'<a href="{url_aviso}" target="_blank" class="boton-aviso">VER AVISO PUBLICADO</a>', unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # --- FILA DE BOTONES: VOLVER Y WHATSAPP ---
+        # --- FILA DE BOTONES UNIFICADOS (28px de alto) ---
         col_volver, col_ws = st.columns(2)
-        
         with col_volver:
-            if st.button("← VOLVER", key="btn_back"):
+            if st.button("← VOLVER", key="btn_back", type="secondary"):
                 st.session_state.opcion_actual = "HOME"
                 st.rerun()
         
         with col_ws:
-            # Configuración WhatsApp
             num_ws = "5491168807566"
             txt_ws = f"Hola! Me interesa obtener más información sobre: {opcion}"
             link_ws = f"https://wa.me/{num_ws}?text={txt_ws.replace(' ', '%20')}"
-            
-            # Botón estilizado
-            st.markdown(f"""
-                <a href="{link_ws}" target="_blank" style="text-decoration: none;">
-                    <div style="
-                        height: 24px; background-color: #25D366; color: white;
-                        text-align: center; line-height: 24px; border-radius: 2px;
-                        font-family: sans-serif; font-size: 9px; font-weight: bold;
-                        text-transform: uppercase; cursor: pointer;
-                    ">
-                        WhatsApp
-                    </div>
-                </a>
-            """, unsafe_allow_html=True)
+            st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
