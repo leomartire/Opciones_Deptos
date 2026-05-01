@@ -27,7 +27,7 @@ st.set_page_config(
 # Meta Tags para que WhatsApp reconozca la imagen de vista previa
 st.markdown(f"""
     <head>
-    <meta property="og:title" content="Zeylicovich & Arzumanián | Cartera 2026">
+    <meta property="og:title" content="Zeylicovich & Arzumanián | Inversines Mayo 2026">
     <meta property="og:description" content="Propiedades exclusivas y proyectos de Flipping en CABA.">
     <meta property="og:image" content="{URL_IMAGEN_PREVIEW}">
     <meta property="og:url" content="{URL_BASE_APP}">
@@ -127,7 +127,7 @@ if diccionario_hojas:
         if img_64:
             st.markdown(f'<div class="hero-container"><img src="data:image/png;base64,{img_64}"></div>', unsafe_allow_html=True)
         
-        st.markdown("<h1 class='titulo-elegante'>Inversiones 2026</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 class='titulo-elegante'>Listado de opciones</h1>", unsafe_allow_html=True)
 
         df_home = diccionario_hojas.get("HOME")
         if df_home is not None:
