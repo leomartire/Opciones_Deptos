@@ -11,21 +11,23 @@ def get_base64(bin_file):
         return base64.b64encode(data).decode()
     return None
 
-# 2. CONFIGURACIÓN E INICIALIZACIÓN DE ESTADO
+# 2. CONFIGURACIÓN
 st.set_page_config(
     page_title="Zeylicovich & Arzumanián | Inversiones", 
     layout="wide", 
     page_icon="🏢"
 )
 
-# --- LÓGICA DE DEEP LINKING (Para que el link de WhatsApp funcione) ---
-query_params = st.query_params
-if "unidad" in query_params and "opcion_actual" not in st.session_state:
-    st.session_state.opcion_actual = query_params["unidad"]
+# --- LÓGICA DE NAVEGACIÓN ---
+# Leemos el parámetro 'unidad' de la URL si existe
+url_params = st.query_params
+
+if "unidad" in url_params:
+    st.session_state.opcion_actual = url_params["unidad"]
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# 3. CSS UNIFICADO
+# 3. CSS UNIFICADO (Sin cambios, manteniendo tu estética)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -85,14 +87,12 @@ st.markdown("""
     .hero-container-ficha img { max-width: 100%; max-height: 280px; object-fit: contain; }
 
     .titulo-elegante {
-        font-family: 'Cormorant Garamond', serif !important;
+        font-family: 'Cormorant+Garamond', serif !important;
         font-size: 20px !important; color: #1a1a1a; text-align: center;
         text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
     }
     .texto-base { font-size: 11px !important; font-family: sans-serif !important; color: #444; margin: 0 !important; }
     </style>
-    
-    <div class="orientacion-mensaje">🔄 POR FAVOR, GIRE SU PANTALLA</div>
     """, unsafe_allow_html=True)
 
 # 4. CARGA DE DATOS
@@ -162,16 +162,15 @@ if diccionario_hojas:
         with col_volver:
             if st.button("← VOLVER", key="btn_back"):
                 st.session_state.opcion_actual = "HOME"
-                # Limpiamos parámetros de URL al volver
-                st.query_params.clear()
+                st.query_params.clear() # Limpia la URL
                 st.rerun()
         
         with col_ws:
             num_ws = "5491168807566"
-            # IMPORTANTE: Reemplaza esta URL con la real de tu app cuando la publiques
-            url_app = "https://tu-proyecto-revaloriza.streamlit.app/"
-            link_directo = f"{url_app}?unidad={opcion.replace(' ', '%20')}"
+            # IMPORTANTE: Asegúrate de que esta sea la URL de tu app desplegada
+            url_base = "https://revaloriza-2026.streamlit.app/" 
+            link_propiedad = f"{url_base}?unidad={opcion.replace(' ', '%20')}"
             
-            txt_ws = f"Hola! Me interesa obtener más información sobre esta propiedad: {link_directo}"
+            txt_ws = f"Hola! Me interesa obtener más información sobre esta propiedad: {link_propiedad}"
             link_ws = f"https://wa.me/{num_ws}?text={txt_ws.replace(' ', '%20')}"
             st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
