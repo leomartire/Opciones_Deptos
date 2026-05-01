@@ -4,10 +4,10 @@ import os
 import base64
 import urllib.parse
 
-# 1. CONFIGURACIÓN DE IDENTIDAD
-# He corregido la URL al formato Raw para que WhatsApp pueda leer la imagen.
+# 1. CONFIGURACIÓN DE IDENTIDAD Y PREVENTA 2026
+# Se agrega ?v=2 para forzar a WhatsApp a refrescar la imagen de caché
 URL_BASE_APP = "https://inversiones-inmobiliarias.streamlit.app/"
-URL_IMAGEN_PREVIEW = "https://raw.githubusercontent.com/leomartire/Opciones_Deptos/main/images/HOME.png"
+URL_IMAGEN_PREVIEW = "https://raw.githubusercontent.com/leomartire/Opciones_Deptos/main/images/HOME.png?v=2"
 
 # 2. FUNCIÓN PARA PROCESAR IMÁGENES LOCALES
 def get_base64(bin_file):
@@ -25,7 +25,6 @@ st.set_page_config(
 )
 
 # Meta Tags para que WhatsApp reconozca la imagen de vista previa
-# Eliminadas las llaves internas que causaban el SyntaxError
 st.markdown(f"""
     <head>
     <meta property="og:title" content="Zeylicovich & Arzumanián | Cartera 2026">
@@ -41,6 +40,7 @@ st.markdown(f"""
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     if os.path.exists(archivo):
+        # Cargamos todas las solapas del Excel
         return pd.read_excel(archivo, sheet_name=None, header=None, dtype=str)
     return None
 
@@ -52,17 +52,19 @@ if "unidad" in st.query_params:
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 6. ESTILOS CSS UNIFICADOS ---
+# --- 6. ESTILOS CSS (Identidad Visual Revaloriza) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
     
+    /* Ajustes de contenedor móvil */
     .stApp { margin-top: -70px; } 
     .block-container {
         padding-top: 2rem !important; max-width: 450px !important; 
         margin: 0 auto !important; padding-left: 10px !important; padding-right: 10px !important;
     }
     
+    /* Tipografía Institucional */
     html, body, [class*="css"], .stMarkdown, p, div {
         font-family: 'Cormorant Garamond', serif !important;
     }
@@ -73,8 +75,10 @@ st.markdown("""
         color: #444 !important;
     }
 
+    /* Ocultar encabezados de tabla para minimalismo */
     thead, tbody th { display: none !important; }
 
+    /* Botones y Acciones */
     .stButton>button, .btn-whatsapp, .boton-aviso {
         height: 38px !important; 
         line-height: 38px !important;
@@ -93,11 +97,10 @@ st.markdown("""
     }
 
     .stButton>button { background-color: #e0e0e0 !important; color: #1a1a1a !important; }
-    .stButton>button p { font-size: 14px !important; font-family: 'Cormorant Garamond', serif !important; margin: 0 !important; }
-
     .btn-whatsapp { background-color: #25D366 !important; color: white !important; }
     .boton-aviso { background-color: #e0e0e0 !important; color: #1a1a1a !important; margin-top: 10px; }
 
+    /* Contenedor de Imagen Hero */
     .hero-container {
         width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
         overflow: hidden; margin-bottom: 1rem; display: flex; justify-content: center;
@@ -105,15 +108,12 @@ st.markdown("""
     .hero-container img { width: 100%; height: auto; object-fit: contain; max-height: 280px; }
 
     .titulo-elegante {
-        font-family: 'Cormorant Garamond', serif !important;
         font-size: 24px !important; color: #1a1a1a; text-align: center;
         text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px;
     }
     
     .texto-home { 
-        font-size: 17px !important; 
-        font-family: 'Cormorant Garamond', serif !important; 
-        color: #1a1a1a; margin: 0 !important; font-weight: 500;
+        font-size: 17px !important; color: #1a1a1a; margin: 0 !important; font-weight: 500;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -189,7 +189,8 @@ if diccionario_hojas:
         with col_ws:
             num_ws = "5491168807566"
             unidad_url = urllib.parse.quote(nombre_hoja)
-            link_ficha = f"{URL_BASE_APP}?unidad={unidad_url}"
+            # Link con parámetro refresh para asegurar que WhatsApp no use caché vieja al compartir fichas
+            link_ficha = f"{URL_BASE_APP}?unidad={unidad_url}&r=2026"
             msg_url = urllib.parse.quote(f"Hola! Me interesa esta propiedad: {link_ficha}")
             
             st.markdown(f'<a href="https://wa.me/{num_ws}?text={msg_url}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
