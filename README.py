@@ -1,5 +1,5 @@
 import streamlit as st
-import pandas as pd
+import pd
 import os
 import base64
 
@@ -18,7 +18,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS REFINADO (Gris Hueso, Dorado y Letra Negra)
+# 3. CSS UNIFICADO (Tipografía y Colores Sincronizados)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -43,12 +43,13 @@ st.markdown("""
     
     thead, tbody th { display: none !important; }
 
-    /* --- UNIFICACIÓN TOTAL DE BOTONES (Altura 32px) --- */
+    /* --- ESTILO UNIFICADO PARA LOS 4 BOTONES --- */
     
+    /* Estilo para botones Streamlit (VER y VOLVER) */
     .stButton>button {
         height: 32px !important; 
         width: 100% !important;
-        font-size: 10px !important; 
+        font-size: 10px !important; /* Tamaño unificado */
         border-radius: 4px !important;
         font-family: sans-serif !important;
         font-weight: 600 !important;
@@ -59,32 +60,20 @@ st.markdown("""
         align-items: center;
         justify-content: center;
         padding: 0 !important;
-        transition: background-color 0.3s ease;
-    }
-
-    /* Botón VER (Dorado con Letra Negra) */
-    div.stButton > button {
-        background-color: #d4af37 !important;
+        background-color: #e0e0e0 !important; /* Gris unificado */
         color: #1a1a1a !important;
     }
 
-    /* Botón VOLVER (Gris Claro / Hueso con Letra Negra) */
-    div.stButton > button[kind="secondary"] {
-        background-color: #e0e0e0 !important; /* Gris claro elegante */
-        color: #1a1a1a !important;
-        border: 1px solid #cccccc !important;
-    }
-
-    /* Botón WhatsApp (Verde con Altura Sincronizada) */
+    /* Botón WhatsApp (HTML) */
     .btn-whatsapp {
         height: 32px !important;
-        background-color: #25D366 !important;
+        background-color: #25D366 !important; /* Identidad WhatsApp */
         color: white !important;
         text-align: center;
         line-height: 32px !important;
         border-radius: 4px;
         font-family: sans-serif;
-        font-size: 10px;
+        font-size: 10px !important; /* Tamaño unificado */
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -93,7 +82,26 @@ st.markdown("""
         width: 100%;
     }
 
-    /* CONTENEDORES DE IMAGEN */
+    /* Botón VER AVISO (HTML) */
+    .boton-aviso {
+        display: block; 
+        width: 100%; 
+        height: 32px !important;
+        line-height: 32px !important;
+        text-align: center;
+        background-color: #e0e0e0 !important; /* Gris unificado */
+        color: #1a1a1a !important;
+        border-radius: 4px;
+        font-size: 10px !important; /* Tamaño unificado */
+        text-decoration: none; 
+        font-family: sans-serif;
+        margin-top: 10px; 
+        font-weight: 600; 
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* IMÁGENES Y TÍTULOS */
     .hero-container-home, .hero-container-ficha {
         width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
         overflow: hidden; margin-bottom: 1rem; display: flex; justify-content: center;
@@ -109,17 +117,6 @@ st.markdown("""
         text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
     }
     .texto-base { font-size: 11px !important; font-family: sans-serif !important; color: #444; margin: 0 !important; }
-
-    /* BOTÓN VER AVISO */
-    .boton-aviso {
-        display: block; width: 100%; text-align: center;
-        background-color: #fdfcf9; color: #1a1a1a; 
-        border: 1px solid #d4af37;
-        padding: 10px 0; border-radius: 4px;
-        font-size: 11px; text-decoration: none; font-family: sans-serif;
-        margin-top: 10px; font-weight: 600; text-transform: uppercase;
-        letter-spacing: 1px;
-    }
     </style>
     
     <div class="orientacion-mensaje">
@@ -143,6 +140,7 @@ if diccionario_hojas:
         st.session_state.opcion_actual = "HOME"
 
     if st.session_state.opcion_actual == "HOME":
+        # --- PANEL PRINCIPAL ---
         img_64 = get_base64("images/HOME.png")
         if img_64:
             st.markdown(f'<div class="hero-container-home"><img src="data:image/png;base64,{img_64}"></div>', unsafe_allow_html=True)
@@ -171,6 +169,7 @@ if diccionario_hojas:
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
     else:
+        # --- FICHA TÉCNICA ---
         opcion = st.session_state.opcion_actual
         img_ficha = get_base64(f"images/{opcion}.png")
         if img_ficha:
@@ -192,9 +191,10 @@ if diccionario_hojas:
 
         st.markdown("<br>", unsafe_allow_html=True)
         
+        # FILA DE BOTONES UNIFICADOS
         col_volver, col_ws = st.columns(2)
         with col_volver:
-            if st.button("← VOLVER", key="btn_back", type="secondary"):
+            if st.button("← VOLVER", key="btn_back"):
                 st.session_state.opcion_actual = "HOME"
                 st.rerun()
         
