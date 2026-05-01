@@ -18,7 +18,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS FINAL (Diseño de autor 2026)
+# 3. CSS (Branding Revaloriza 2026)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -61,13 +61,17 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 4. CARGA DE DATOS
-@st.cache_data
+# 4. CARGA DE DATOS (Con TTL para evitar que el caché se "congele")
+@st.cache_data(ttl=60) # El caché se invalida cada 60 segundos
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     if os.path.exists(archivo):
+        # Leemos el archivo asegurándonos de que no traiga basura
         return pd.read_excel(archivo, sheet_name=None, header=None, dtype=str)
     return None
+
+# Limpiar caché si es necesario con un botón (opcional, solo para desarrollo)
+# st.cache_data.clear() 
 
 diccionario_hojas = cargar_datos()
 
@@ -93,11 +97,8 @@ if diccionario_hojas:
             for index, row in df_home.iterrows():
                 val_raw = str(row[0]).strip() if pd.notnull(row[0]) else ""
                 
-                # Filtro estándar: evitamos celdas vacías, encabezados técnicos y duplicados
-                if (not val_raw or 
-                    val_raw.upper() == "UNIDAD" or 
-                    val_raw.isdigit() or 
-                    val_raw in unidades_vistas):
+                # Solo filtramos si la celda está realmente vacía o es un número de fila
+                if not val_raw or val_raw.isdigit() or val_raw in unidades_vistas or val_raw.upper() == "UNIDAD":
                     continue
                 
                 unidades_vistas.add(val_raw)
@@ -128,7 +129,6 @@ if diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].copy()
             url_aviso = None
             
-            # Buscador de links
             for col in df_ficha.columns:
                 mask = df_ficha[col].str.contains("http|www", na=False)
                 if mask.any():
