@@ -1,5 +1,5 @@
 import streamlit as st
-import pd
+import pandas as pd  # <--- Corregido: importación correcta
 import os
 import base64
 
@@ -43,13 +43,13 @@ st.markdown("""
     
     thead, tbody th { display: none !important; }
 
-    /* --- ESTILO UNIFICADO PARA LOS 4 BOTONES --- */
+    /* --- ESTILO UNIFICADO PARA LOS 4 BOTONES (32px de alto) --- */
     
-    /* Estilo para botones Streamlit (VER y VOLVER) */
+    /* Botones Streamlit (VER y VOLVER) */
     .stButton>button {
         height: 32px !important; 
         width: 100% !important;
-        font-size: 10px !important; /* Tamaño unificado */
+        font-size: 10px !important; 
         border-radius: 4px !important;
         font-family: sans-serif !important;
         font-weight: 600 !important;
@@ -67,13 +67,13 @@ st.markdown("""
     /* Botón WhatsApp (HTML) */
     .btn-whatsapp {
         height: 32px !important;
-        background-color: #25D366 !important; /* Identidad WhatsApp */
+        background-color: #25D366 !important;
         color: white !important;
         text-align: center;
         line-height: 32px !important;
         border-radius: 4px;
         font-family: sans-serif;
-        font-size: 10px !important; /* Tamaño unificado */
+        font-size: 10px !important;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -92,7 +92,7 @@ st.markdown("""
         background-color: #e0e0e0 !important; /* Gris unificado */
         color: #1a1a1a !important;
         border-radius: 4px;
-        font-size: 10px !important; /* Tamaño unificado */
+        font-size: 10px !important;
         text-decoration: none; 
         font-family: sans-serif;
         margin-top: 10px; 
