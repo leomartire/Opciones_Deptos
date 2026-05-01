@@ -18,7 +18,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS UNIFICADO (Precisión de Píxeles)
+# 3. CSS REFINADO (Gris Hueso, Dorado y Letra Negra)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -45,7 +45,6 @@ st.markdown("""
 
     /* --- UNIFICACIÓN TOTAL DE BOTONES (Altura 32px) --- */
     
-    /* Estilo para botones nativos (VER y VOLVER) */
     .stButton>button {
         height: 32px !important; 
         width: 100% !important;
@@ -60,27 +59,29 @@ st.markdown("""
         align-items: center;
         justify-content: center;
         padding: 0 !important;
+        transition: background-color 0.3s ease;
     }
 
-    /* Botón VER (Dorado elegante) */
+    /* Botón VER (Dorado con Letra Negra) */
     div.stButton > button {
         background-color: #d4af37 !important;
         color: #1a1a1a !important;
     }
 
-    /* Botón VOLVER (Negro Minimalista) */
+    /* Botón VOLVER (Gris Claro / Hueso con Letra Negra) */
     div.stButton > button[kind="secondary"] {
-        background-color: #1a1a1a !important;
-        color: #f4f1ea !important;
+        background-color: #e0e0e0 !important; /* Gris claro elegante */
+        color: #1a1a1a !important;
+        border: 1px solid #cccccc !important;
     }
 
-    /* Botón WhatsApp (HTML - Altura forzada a 32px) */
+    /* Botón WhatsApp (Verde con Altura Sincronizada) */
     .btn-whatsapp {
         height: 32px !important;
         background-color: #25D366 !important;
         color: white !important;
         text-align: center;
-        line-height: 32px !important; /* Centrado vertical exacto */
+        line-height: 32px !important;
         border-radius: 4px;
         font-family: sans-serif;
         font-size: 10px;
@@ -109,11 +110,11 @@ st.markdown("""
     }
     .texto-base { font-size: 11px !important; font-family: sans-serif !important; color: #444; margin: 0 !important; }
 
-    /* BOTÓN VER AVISO (Grande) */
+    /* BOTÓN VER AVISO */
     .boton-aviso {
         display: block; width: 100%; text-align: center;
-        background-color: #f4f1ea; color: #1a1a1a; 
-        border: 1px solid #1a1a1a;
+        background-color: #fdfcf9; color: #1a1a1a; 
+        border: 1px solid #d4af37;
         padding: 10px 0; border-radius: 4px;
         font-size: 11px; text-decoration: none; font-family: sans-serif;
         margin-top: 10px; font-weight: 600; text-transform: uppercase;
@@ -191,10 +192,8 @@ if diccionario_hojas:
 
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # FILA DE BOTONES UNIFICADOS (32px de alto total)
         col_volver, col_ws = st.columns(2)
         with col_volver:
-            # Usamos kind="secondary" para el botón Negro
             if st.button("← VOLVER", key="btn_back", type="secondary"):
                 st.session_state.opcion_actual = "HOME"
                 st.rerun()
