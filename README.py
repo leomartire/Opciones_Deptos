@@ -50,11 +50,18 @@ if "unidad" in st.query_params:
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 6. ESTILOS CSS + CARTEL DE ROTACIÓN ---
+# --- 6. ESTILOS CSS + CARTEL DE ROTACIÓN + OCULTAR MENÚS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
     
+    /* 1. OCULTAR ELEMENTOS DE STREAMLIT (Deploy, Menú, Footer) */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stAppDeployButton { display: none !important; }
+    
+    /* 2. CARTEL DE ROTACIÓN */
     #landscape-notice {
         display: none;
         position: fixed;
@@ -77,6 +84,7 @@ st.markdown("""
     .notice-icon { font-size: 50px; color: #b8860b; margin-bottom: 15px; }
     .notice-text { font-size: 20px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; line-height: 1.2; }
 
+    /* 3. ESTILOS GENERALES DE LA APP */
     .stApp { margin-top: -70px; } 
     .block-container {
         padding-top: 2rem !important; max-width: 450px !important; 
@@ -141,6 +149,7 @@ st.markdown("""
 if diccionario_hojas:
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
 
+    # --- VISTA: HOME ---
     if st.session_state.opcion_actual == "HOME":
         img_64 = get_base64("images/HOME.png")
         if img_64:
@@ -170,6 +179,7 @@ if diccionario_hojas:
                     st.markdown(f"<p class='texto-home' style='text-align:right; line-height:38px;'>{val_cont}</p>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
+    # --- VISTA: FICHA TÉCNICA ---
     else:
         opcion = st.session_state.opcion_actual
         nombre_hoja = hojas_reales.get(opcion.upper(), opcion)
@@ -205,10 +215,9 @@ if diccionario_hojas:
                 st.rerun()
         
         with col_ws:
-            # LÓGICA COMPARTIR GENÉRICA (SIN TELÉFONO)
+            # LÓGICA COMPARTIR GENÉRICA (ABRE SELECTOR DE CONTACTOS)
             unidad_url = urllib.parse.quote(nombre_hoja)
             link_ficha = f"{URL_BASE_APP}?unidad={unidad_url}&r=2026"
             msg_url = urllib.parse.quote(f"Mirá esta propiedad de Zeylicovich & Arzumanián: {link_ficha}")
             
-            # Al no poner número después de 'send', WhatsApp abre la lista de contactos
             st.markdown(f'<a href="https://api.whatsapp.com/send?text={msg_url}" target="_blank" class="btn-whatsapp">COMPARTIR</a>', unsafe_allow_html=True)
