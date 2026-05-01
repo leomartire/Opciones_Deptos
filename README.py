@@ -30,7 +30,7 @@ st.markdown(f"""
     <head>
     <meta property="og:title" content="Zeylicovich & Arzumanián | Cartera 2026">
     <meta property="og:description" content="Propiedades exclusivas y proyectos de Flipping en CABA.">
-    <meta property="og:image" content="{https://github.com/leomartire/Opciones_Deptos/blob/deee0c02a8c18a8a702adf350ede44f2b27e4bf8/images/HOME.png}">
+    <meta property="og:image" content="{https://github.com/leomartire/Opciones_Deptos/blob/deee0c02a8c18a8a702adf350ede44f2b27e4bf8/images/HOME.png/}">
     <meta property="og:url" content="{https://inversiones-inmobiliarias.streamlit.app/}">
     <meta property="og:type" content="website">
     </head>
