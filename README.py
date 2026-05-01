@@ -18,7 +18,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS (Diseño Original 2026)
+# 3. CSS (Ajuste de visibilidad de imagen)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -42,30 +42,38 @@ st.markdown("""
     }
 
     @media only screen and (max-width: 900px) and (orientation: portrait) {
-        .orientacion-mensaje {
-            display: block !important;
-        }
+        .orientacion-mensaje { display: block !important; }
     }
 
-    .stApp { margin-top: -85px; }
+    /* Ajuste de margen para evitar cortes */
+    .stApp { margin-top: -70px; } 
+    
     .block-container {
-        padding-top: 0rem !important;
+        padding-top: 2rem !important; /* Damos un poco de aire arriba */
         max-width: 450px !important; 
         margin: 0 auto !important;
         padding-left: 10px !important;
         padding-right: 10px !important;
     }
+    
     thead { display: none !important; }
     tbody th { display: none !important; }
     
+    /* Contenedores de Imagen Optimizados */
     .hero-container-home, .hero-container-ficha {
-        width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
-        overflow: hidden; margin-bottom: 1rem;
+        width: 100%; 
+        border-radius: 0 0 10px 10px; 
+        background-color: #f4f1ea;
+        overflow: hidden; 
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: center;
     }
-    .hero-container-home { height: 160px; }
-    .hero-container-home img { width: 100%; height: 100%; object-fit: cover; }
     
-    .hero-container-ficha { height: auto; max-height: 280px; display: flex; justify-content: center; }
+    .hero-container-home { height: auto; min-height: 100px; }
+    .hero-container-home img { width: 100%; height: auto; object-fit: contain; }
+    
+    .hero-container-ficha { height: auto; max-height: 280px; }
     .hero-container-ficha img { max-width: 100%; max-height: 280px; object-fit: contain; }
 
     .titulo-elegante {
