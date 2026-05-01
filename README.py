@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import base64
 
-# 1. FUNCIÓN DE CARGA DE IMÁGENES (Unificada para Home y Fichas)
+# 1. FUNCIÓN DE CARGA DE IMÁGENES
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         with open(bin_file, 'rb') as f:
@@ -18,13 +18,12 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS CONSOLIDADO PARA TODA LA APP
+# 3. CSS CONSOLIDADO (Ajuste de imágenes en Fichas)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
 
-    /* Ajuste de margen superior para no tapar el botón Volver */
-    .stApp { margin-top: -70px; }
+    .stApp { margin-top: -85px; }
 
     .block-container {
         padding-top: 0rem !important;
@@ -34,8 +33,8 @@ st.markdown("""
         padding-right: 10px !important;
     }
 
-    /* Banners de Home y Fichas */
-    .hero-container {
+    /* Banner Home: Mantiene el recorte centrado para impacto visual */
+    .hero-container-home {
         width: 100%;
         height: 160px; 
         overflow: hidden;
@@ -43,13 +42,31 @@ st.markdown("""
         border-radius: 0 0 10px 10px;
         background-color: #f4f1ea;
     }
-    .hero-container img {
+    .hero-container-home img {
         width: 100%;
         height: 100%;
         object-fit: cover; 
     }
 
-    /* Tipografías unificadas */
+    /* Banner Ficha: Muestra la IMAGEN COMPLETA sin cortes */
+    .hero-container-ficha {
+        width: 100%;
+        height: auto; 
+        max-height: 280px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        background-color: #f4f1ea;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .hero-container-ficha img {
+        max-width: 100%;
+        max-height: 280px;
+        object-fit: contain; /* Muestra la imagen entera sin recortar */
+    }
+
     .titulo-elegante {
         font-family: 'Cormorant Garamond', serif !important;
         font-size: 20px !important;
@@ -66,15 +83,8 @@ st.markdown("""
         color: #444;
     }
 
-    /* Tablas de Ficha Técnica personalizadas */
-    .stTable {
-        font-size: 11px !important;
-        font-family: sans-serif !important;
-    }
-
-    /* Botones (Ver y Volver) */
     .stButton>button {
-        height: 26px !important;
+        height: 28px !important;
         font-size: 10px !important;
         border: 1px solid #d4af37 !important;
         background-color: transparent !important;
@@ -88,7 +98,6 @@ st.markdown("""
         color: white !important;
     }
 
-    /* Forzado de fila en Home */
     [data-testid="column"] { flex: 1 1 0% !important; min-width: 0px !important; padding: 0px 2px !important; }
     [data-testid="stHorizontalBlock"] { gap: 0px !important; align-items: center !important; }
 
@@ -96,7 +105,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 4. DATOS
+# 4. CARGA DE DATOS
 @st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
@@ -111,13 +120,11 @@ if diccionario_hojas:
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-    # --- NAVEGACIÓN ---
-    
-    # VISTA HOME
+    # --- VISTA HOME ---
     if st.session_state.opcion_actual == "HOME":
         img_64 = get_base64("images/HOME.png")
         if img_64:
-            st.markdown(f'<div class="hero-container"><img src="data:image/png;base64,{img_64}"></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="hero-container-home"><img src="data:image/png;base64,{img_64}"></div>', unsafe_allow_html=True)
         
         st.markdown("<h1 class='titulo-elegante'>Inversiones 2026</h1>", unsafe_allow_html=True)
 
@@ -143,29 +150,26 @@ if diccionario_hojas:
                     st.markdown(f"<p class='texto-base' style='text-align:right;'>{val_contacto}</p>", unsafe_allow_html=True)
                 st.markdown("<hr>", unsafe_allow_html=True)
 
-    # VISTA FICHA TÉCNICA
+    # --- VISTA FICHA TÉCNICA ---
     else:
         opcion = st.session_state.opcion_actual
         
-        # Imagen de la Unidad (Usando el mismo estilo que la Home)
+        # Imagen de la Unidad: Ahora usa 'contain' para que no se corte
         ruta_img = f"images/{opcion}.png"
         img_ficha_64 = get_base64(ruta_img)
         if img_ficha_64:
-            st.markdown(f'<div class="hero-container"><img src="data:image/png;base64,{img_ficha_64}"></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="hero-container-ficha"><img src="data:image/png;base64,{img_ficha_64}"></div>', unsafe_allow_html=True)
         
-        st.markdown(f"<h1 class='titulo-elegante'>Ficha: {opcion}</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h1 class='titulo-elegante'>{opcion}</h1>", unsafe_allow_html=True)
         
-        # Tabla de Datos
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].dropna(how='all', axis=0)
-            st.table(df_ficha)
+            st.table(df_ficha) # Mantiene la estética técnica y limpia
         
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Botón Volver (Ahora visible y estilizado)
         if st.button("← VOLVER AL PANEL"):
             st.session_state.opcion_actual = "HOME"
             st.rerun()
-
 else:
     st.error("Error: Opciones_Deptos_LM.xlsx no encontrado.")
