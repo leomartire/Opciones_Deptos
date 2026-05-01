@@ -18,7 +18,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS FINAL
+# 3. CSS FINAL (Diseño de autor 2026)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -66,20 +66,18 @@ st.markdown("""
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     if os.path.exists(archivo):
-        # Cargamos el Excel completo
         return pd.read_excel(archivo, sheet_name=None, header=None, dtype=str)
     return None
 
 diccionario_hojas = cargar_datos()
 
 if diccionario_hojas:
-    # Mapeo de hojas para navegación (Zeylicovich & Arzumanián 2026)
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
     if "opcion_actual" not in st.session_state:
         st.session_state.opcion_actual = "HOME"
 
-    # --- VISTA PANEL PRINCIPAL ---
+    # --- PANEL PRINCIPAL ---
     if st.session_state.opcion_actual == "HOME":
         img_64 = get_base64("images/HOME.png")
         if img_64:
@@ -93,13 +91,10 @@ if diccionario_hojas:
             st.markdown("<hr style='margin: 0 0 8px 0; opacity: 0.3; border-top: 1px solid #333;'>", unsafe_allow_html=True)
             
             for index, row in df_home.iterrows():
-                # Obtenemos el valor de la primera columna
                 val_raw = str(row[0]).strip() if pd.notnull(row[0]) else ""
                 
-                # FILTRO DE SEGURIDAD EXTREMO:
-                # Si la palabra es "HOME", "UNIDAD", o es un número solo, la saltamos.
+                # Filtro estándar: evitamos celdas vacías, encabezados técnicos y duplicados
                 if (not val_raw or 
-                    val_raw.upper() == "HOME" or 
                     val_raw.upper() == "UNIDAD" or 
                     val_raw.isdigit() or 
                     val_raw in unidades_vistas):
@@ -111,7 +106,7 @@ if diccionario_hojas:
                 with col1: 
                     st.markdown(f"<p class='texto-base'>{val_raw}</p>", unsafe_allow_html=True)
                 with col2:
-                    if st.button("VER", key=f"btn_v_{index}"):
+                    if st.button("VER", key=f"btn_nav_{index}"):
                         st.session_state.opcion_actual = hojas_reales.get(val_raw.upper(), "HOME")
                         st.rerun()
                 with col3:
@@ -121,7 +116,7 @@ if diccionario_hojas:
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
     else:
-        # --- VISTA FICHA TÉCNICA ---
+        # --- FICHA TÉCNICA ---
         opcion = st.session_state.opcion_actual
         img_ficha = get_base64(f"images/{opcion}.png")
         if img_ficha:
@@ -133,7 +128,7 @@ if diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].copy()
             url_aviso = None
             
-            # Buscar link en la ficha
+            # Buscador de links
             for col in df_ficha.columns:
                 mask = df_ficha[col].str.contains("http|www", na=False)
                 if mask.any():
@@ -141,7 +136,6 @@ if diccionario_hojas:
                     df_ficha.loc[mask, col] = pd.NA
                     break
             
-            # Mostrar tabla sin índices
             st.table(df_ficha.iloc[1:].dropna(how='all'))
             
             if url_aviso:
