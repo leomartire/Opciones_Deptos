@@ -4,7 +4,13 @@ import os
 import base64
 import urllib.parse
 
-# 1. FUNCIÓN PARA PROCESAR IMÁGENES LOCALES
+# 1. CONFIGURACIÓN DE IDENTIDAD (EDITA ESTO)
+# Cambia la URL_BASE_APP por la dirección que te da Streamlit al publicar.
+# Cambia la URL_IMAGEN_PREVIEW por el link "Raw" de tu imagen en GitHub.
+URL_BASE_APP = "https://inversiones-inmobiliarias.streamlit.app/"
+URL_IMAGEN_PREVIEW = "https://github.com/leomartire/Opciones_Deptos/blob/deee0c02a8c18a8a702adf350ede44f2b27e4bf8/images/HOME.png"
+
+# 2. FUNCIÓN PARA PROCESAR IMÁGENES LOCALES
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         with open(bin_file, 'rb') as f:
@@ -12,14 +18,25 @@ def get_base64(bin_file):
         return base64.b64encode(data).decode()
     return None
 
-# 2. CONFIGURACIÓN DE PÁGINA
+# 3. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(
     page_title="Zeylicovich & Arzumanián | Inversiones", 
     layout="wide", 
     page_icon="🏢"
 )
 
-# --- 3. CARGA DE DATOS ---
+# Meta Tags para que WhatsApp reconozca la imagen de vista previa
+st.markdown(f"""
+    <head>
+    <meta property="og:title" content="Zeylicovich & Arzumanián | Cartera 2026">
+    <meta property="og:description" content="Propiedades exclusivas y proyectos de Flipping en CABA.">
+    <meta property="og:image" content="{https://github.com/leomartire/Opciones_Deptos/blob/deee0c02a8c18a8a702adf350ede44f2b27e4bf8/images/HOME.png">
+    <meta property="og:url" content="{https://inversiones-inmobiliarias.streamlit.app/}">
+    <meta property="og:type" content="website">
+    </head>
+    """, unsafe_allow_html=True)
+
+# --- 4. CARGA DE DATOS ---
 @st.cache_data(ttl=60)
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
@@ -29,13 +46,13 @@ def cargar_datos():
 
 diccionario_hojas = cargar_datos()
 
-# --- 4. LÓGICA DE NAVEGACIÓN ---
+# --- 5. LÓGICA DE NAVEGACIÓN ---
 if "unidad" in st.query_params:
     st.session_state.opcion_actual = st.query_params["unidad"]
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 5. ESTILOS CSS UNIFICADOS (CORRECCIÓN DE TAMAÑOS) ---
+# --- 6. ESTILOS CSS UNIFICADOS (Cormorant Garamond + Simetría) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
@@ -46,12 +63,10 @@ st.markdown("""
         margin: 0 auto !important; padding-left: 10px !important; padding-right: 10px !important;
     }
     
-    /* FUENTE GLOBAL */
     html, body, [class*="css"], .stMarkdown, p, div {
         font-family: 'Cormorant Garamond', serif !important;
     }
 
-    /* TABLAS DE FICHA */
     .stTable td {
         font-family: 'Cormorant Garamond', serif !important;
         font-size: 15px !important;
@@ -60,13 +75,13 @@ st.markdown("""
 
     thead, tbody th { display: none !important; }
 
-    /* UNIFICACIÓN TOTAL DE BOTONES: VER, VOLVER, WHATSAPP, AVISO */
+    /* BOTONES UNIFICADOS (38px de alto, 14px de fuente) */
     .stButton>button, .btn-whatsapp, .boton-aviso {
         height: 38px !important; 
         line-height: 38px !important;
         width: 100% !important;
         font-family: 'Cormorant Garamond', serif !important;
-        font-size: 14px !important; /* Tamaño unificado */
+        font-size: 14px !important; 
         font-weight: 600 !important;
         text-transform: uppercase !important;
         letter-spacing: 1.2px !important;
@@ -78,29 +93,11 @@ st.markdown("""
         padding: 0 !important;
     }
 
-    /* Colores para VER y VOLVER (Streamlit Nativo) */
-    .stButton>button {
-        background-color: #e0e0e0 !important; 
-        color: #1a1a1a !important;
-    }
-    .stButton>button p {
-        font-size: 14px !important;
-        font-family: 'Cormorant Garamond', serif !important;
-        margin: 0 !important;
-    }
+    .stButton>button { background-color: #e0e0e0 !important; color: #1a1a1a !important; }
+    .stButton>button p { font-size: 14px !important; font-family: 'Cormorant Garamond', serif !important; margin: 0 !important; }
 
-    /* Colores para WHATSAPP */
-    .btn-whatsapp { 
-        background-color: #25D366 !important; 
-        color: white !important; 
-    }
-
-    /* Colores para VER AVISO */
-    .boton-aviso { 
-        background-color: #e0e0e0 !important; 
-        color: #1a1a1a !important; 
-        margin-top: 10px;
-    }
+    .btn-whatsapp { background-color: #25D366 !important; color: white !important; }
+    .boton-aviso { background-color: #e0e0e0 !important; color: #1a1a1a !important; margin-top: 10px; }
 
     .hero-container {
         width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
@@ -192,9 +189,7 @@ if diccionario_hojas:
         
         with col_ws:
             num_ws = "5491168807566"
-            url_base = "https://tu-app-revaloriza.streamlit.app" 
             unidad_url = urllib.parse.quote(nombre_hoja)
-            link_ficha = f"{url_base}?unidad={unidad_url}"
-            msg_url = urllib.parse.quote(f"Hola! Me interesa esta propiedad: {link_ficha}")
-            
+            link_ficha = f"{https://inversiones-inmobiliarias.streamlit.app/}?unidad={unidad_url}"
+            msg_url = urllib.parse.quote(f"Hola! Me interesa esta propiedad: {link_ficha}")            
             st.markdown(f'<a href="https://wa.me/{num_ws}?text={msg_url}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
