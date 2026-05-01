@@ -18,7 +18,7 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# 3. CSS UNIFICADO (Botones Premium)
+# 3. CSS UNIFICADO (Precisión de Píxeles)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -43,50 +43,53 @@ st.markdown("""
     
     thead, tbody th { display: none !important; }
 
-    /* UNIFICACIÓN DE BOTONES (ESTÁNDAR 28px de alto) */
+    /* --- UNIFICACIÓN TOTAL DE BOTONES (Altura 32px) --- */
+    
+    /* Estilo para botones nativos (VER y VOLVER) */
     .stButton>button {
-        height: 28px !important; 
+        height: 32px !important; 
         width: 100% !important;
         font-size: 10px !important; 
         border-radius: 4px !important;
         font-family: sans-serif !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        transition: all 0.3s ease;
+        letter-spacing: 1px !important;
+        border: none !important;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: none !important;
+        padding: 0 !important;
     }
 
-    /* Color Botón VER (Home) */
+    /* Botón VER (Dorado elegante) */
     div.stButton > button {
-        background-color: #d4af37 !important; /* Dorado */
-        color: white !important;
+        background-color: #d4af37 !important;
+        color: #1a1a1a !important;
     }
 
-    /* Color Botón VOLVER (Ficha) */
+    /* Botón VOLVER (Negro Minimalista) */
     div.stButton > button[kind="secondary"] {
-        background-color: #4a4a4a !important; /* Gris Oscuro Elegante */
-        color: white !important;
+        background-color: #1a1a1a !important;
+        color: #f4f1ea !important;
     }
 
-    /* Estilo Botón WhatsApp (HTML) */
+    /* Botón WhatsApp (HTML - Altura forzada a 32px) */
     .btn-whatsapp {
-        height: 28px;
-        background-color: #25D366;
-        color: white;
+        height: 32px !important;
+        background-color: #25D366 !important;
+        color: white !important;
         text-align: center;
-        line-height: 28px;
+        line-height: 32px !important; /* Centrado vertical exacto */
         border-radius: 4px;
         font-family: sans-serif;
         font-size: 10px;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
         text-decoration: none;
         display: block;
+        width: 100%;
     }
 
     /* CONTENEDORES DE IMAGEN */
@@ -106,12 +109,15 @@ st.markdown("""
     }
     .texto-base { font-size: 11px !important; font-family: sans-serif !important; color: #444; margin: 0 !important; }
 
+    /* BOTÓN VER AVISO (Grande) */
     .boton-aviso {
         display: block; width: 100%; text-align: center;
-        background-color: #1a1a1a; color: #d4af37; /* Negro y Dorado */
+        background-color: #f4f1ea; color: #1a1a1a; 
+        border: 1px solid #1a1a1a;
         padding: 10px 0; border-radius: 4px;
         font-size: 11px; text-decoration: none; font-family: sans-serif;
         margin-top: 10px; font-weight: 600; text-transform: uppercase;
+        letter-spacing: 1px;
     }
     </style>
     
@@ -136,7 +142,6 @@ if diccionario_hojas:
         st.session_state.opcion_actual = "HOME"
 
     if st.session_state.opcion_actual == "HOME":
-        # --- PANEL PRINCIPAL ---
         img_64 = get_base64("images/HOME.png")
         if img_64:
             st.markdown(f'<div class="hero-container-home"><img src="data:image/png;base64,{img_64}"></div>', unsafe_allow_html=True)
@@ -154,18 +159,17 @@ if diccionario_hojas:
                 
                 col1, col2, col3 = st.columns([1.9, 0.7, 1.1]) 
                 with col1: 
-                    st.markdown(f"<p class='texto-base' style='line-height:28px;'>{val_raw}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-base' style='line-height:32px;'>{val_raw}</p>", unsafe_allow_html=True)
                 with col2:
                     if st.button("VER", key=f"btn_{index}"):
                         st.session_state.opcion_actual = hojas_reales.get(val_raw.upper(), "HOME")
                         st.rerun()
                 with col3:
                     val_cont = str(row[2]).strip() if len(row) > 2 else "-"
-                    st.markdown(f"<p class='texto-base' style='text-align:right; line-height:28px;'>{val_cont}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-base' style='text-align:right; line-height:32px;'>{val_cont}</p>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
     else:
-        # --- FICHA TÉCNICA ---
         opcion = st.session_state.opcion_actual
         img_ficha = get_base64(f"images/{opcion}.png")
         if img_ficha:
@@ -187,9 +191,10 @@ if diccionario_hojas:
 
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # --- FILA DE BOTONES UNIFICADOS (28px de alto) ---
+        # FILA DE BOTONES UNIFICADOS (32px de alto total)
         col_volver, col_ws = st.columns(2)
         with col_volver:
+            # Usamos kind="secondary" para el botón Negro
             if st.button("← VOLVER", key="btn_back", type="secondary"):
                 st.session_state.opcion_actual = "HOME"
                 st.rerun()
