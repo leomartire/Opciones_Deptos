@@ -6,7 +6,7 @@ import urllib.parse
 
 # 1. CONFIGURACIÓN DE IDENTIDAD
 # He corregido la URL al formato Raw para que WhatsApp pueda leer la imagen.
-URL_BASE_APP = "https://tu-app-revaloriza.streamlit.app"
+URL_BASE_APP = "https://inversiones-inmobiliarias.streamlit.app/"
 URL_IMAGEN_PREVIEW = "https://raw.githubusercontent.com/leomartire/Opciones_Deptos/main/images/HOME.png"
 
 # 2. FUNCIÓN PARA PROCESAR IMÁGENES LOCALES
