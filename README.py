@@ -19,20 +19,17 @@ st.set_page_config(
 )
 
 # --- 3. LÓGICA DE NAVEGACIÓN (Deep Linking) ---
-# Esta sección lee la URL para saber si debe mostrar una ficha específica
-params = st.query_params
-
-if "unidad" in params:
-    st.session_state.opcion_actual = params["unidad"]
+# Priorizamos siempre lo que venga por URL para que el link de WhatsApp mande
+if "unidad" in st.query_params:
+    st.session_state.opcion_actual = st.query_params["unidad"]
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 4. ESTILOS CSS (Identidad Visual) ---
+# --- 4. ESTILOS CSS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
     
-    /* Mensaje de rotación para móviles */
     .orientacion-mensaje {
         display: none; background-color: #1a1a1a; color: #d4af37;
         text-align: center; padding: 15px; font-family: sans-serif;
@@ -49,10 +46,8 @@ st.markdown("""
         margin: 0 auto !important; padding-left: 10px !important; padding-right: 10px !important;
     }
     
-    /* Ocultar cabeceras de tablas para minimalismo */
     thead, tbody th { display: none !important; }
 
-    /* BOTONES INSTITUCIONALES (Gris) */
     .stButton>button {
         height: 32px !important; width: 100% !important;
         font-size: 10px !important; border-radius: 4px !important;
@@ -61,7 +56,6 @@ st.markdown("""
         border: none !important; background-color: #e0e0e0 !important; color: #1a1a1a !important;
     }
 
-    /* BOTÓN WHATSAPP (Verde Acción) */
     .btn-whatsapp {
         height: 32px !important; background-color: #25D366 !important;
         color: white !important; text-align: center; line-height: 32px !important;
@@ -70,7 +64,6 @@ st.markdown("""
         text-decoration: none; display: block; width: 100%;
     }
 
-    /* BOTÓN AVISO (Gris) */
     .boton-aviso {
         display: block; width: 100%; height: 32px !important;
         line-height: 32px !important; text-align: center;
@@ -80,7 +73,6 @@ st.markdown("""
         font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
     }
 
-    /* Contenedores de Imagen Hero */
     .hero-container-home, .hero-container-ficha {
         width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
         overflow: hidden; margin-bottom: 1rem; display: flex; justify-content: center;
@@ -110,10 +102,11 @@ def cargar_datos():
 diccionario_hojas = cargar_datos()
 
 if diccionario_hojas:
+    # Diccionario para normalizar búsquedas (ignorar mayúsculas/minúsculas)
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
 
-    # --- VISTA: HOME ---
     if st.session_state.opcion_actual == "HOME":
+        # VISTA HOME
         img_64 = get_base64("images/HOME.png")
         if img_64:
             st.markdown(f'<div class="hero-container-home"><img src="data:image/png;base64,{img_64}"></div>', unsafe_allow_html=True)
@@ -140,20 +133,21 @@ if diccionario_hojas:
                     st.markdown(f"<p class='texto-base' style='text-align:right; line-height:32px;'>{val_cont}</p>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
-    # --- VISTA: FICHA TÉCNICA ---
     else:
+        # VISTA FICHA TÉCNICA
         opcion = st.session_state.opcion_actual
-        img_ficha = get_base64(f"images/{opcion}.png")
+        # Buscamos el nombre real de la hoja para evitar errores de case-sensitivity
+        nombre_hoja = hojas_reales.get(opcion.upper(), opcion)
         
+        img_ficha = get_base64(f"images/{nombre_hoja}.png")
         if img_ficha:
             st.markdown(f'<div class="hero-container-ficha"><img src="data:image/png;base64,{img_ficha}"></div>', unsafe_allow_html=True)
         
-        st.markdown(f"<h1 class='titulo-elegante'>{opcion}</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h1 class='titulo-elegante'>{nombre_hoja}</h1>", unsafe_allow_html=True)
         
-        if opcion in diccionario_hojas:
-            df_ficha = diccionario_hojas[opcion].copy()
+        if nombre_hoja in diccionario_hojas:
+            df_ficha = diccionario_hojas[nombre_hoja].copy()
             url_aviso = None
-            # Buscamos si hay un link de ZonaProp/MercadoLibre en la tabla
             for col in df_ficha.columns:
                 mask = df_ficha[col].str.contains("http|www", na=False)
                 if mask.any():
@@ -167,27 +161,20 @@ if diccionario_hojas:
                 st.markdown(f'<a href="{url_aviso}" target="_blank" class="boton-aviso">VER AVISO PUBLICADO</a>', unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        
-        # --- BOTONES DE ACCIÓN ---
         col_volver, col_ws = st.columns(2)
         
         with col_volver:
             if st.button("← VOLVER", key="btn_back"):
                 st.session_state.opcion_actual = "HOME"
-                st.query_params.clear() # Limpia la URL para evitar bucles
+                st.query_params.clear()
                 st.rerun()
         
         with col_ws:
-            # CONFIGURACIÓN DE WHATSAPP
             num_ws = "5491168807566"
+            # CORRECCIÓN: URL sin la barra final "/"
+            url_base = "https://inversiones-inmobiliarias.streamlit.app" 
             
-            # --- AJUSTE CLAVE: URL DE LA APP ---
-            # Reemplaza 'tu-app.streamlit.app' por tu dirección real (sin / al final)
-            url_base = "https://inversiones-inmobiliarias.streamlit.app/" 
-            
-            # El link que se envía por mensaje es la URL de la ficha técnica directa
-            link_ficha = f"{url_base}?unidad={opcion.replace(' ', '%20')}"
-            
+            link_ficha = f"{url_base}?unidad={nombre_hoja.replace(' ', '%20')}"
             txt_ws = f"Hola! Me interesa obtener más información sobre esta propiedad: {link_ficha}"
             link_ws = f"https://wa.me/{num_ws}?text={txt_ws.replace(' ', '%20')}"
             
