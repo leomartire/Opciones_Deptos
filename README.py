@@ -35,7 +35,7 @@ if "unidad" in st.query_params:
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 5. ESTILOS CSS UNIFICADOS ---
+# --- 5. ESTILOS CSS UNIFICADOS (CORRECCIÓN DE TAMAÑOS) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
@@ -54,36 +54,53 @@ st.markdown("""
     /* TABLAS DE FICHA */
     .stTable td {
         font-family: 'Cormorant Garamond', serif !important;
-        font-size: 14px !important;
+        font-size: 15px !important;
         color: #444 !important;
     }
 
     thead, tbody th { display: none !important; }
 
-    /* UNIFICACIÓN DE TODOS LOS BOTONES (VER, VOLVER Y OTROS) */
-    .stButton>button, .stButton>button p {
+    /* UNIFICACIÓN TOTAL DE BOTONES: VER, VOLVER, WHATSAPP, AVISO */
+    .stButton>button, .btn-whatsapp, .boton-aviso {
+        height: 38px !important; 
+        line-height: 38px !important;
+        width: 100% !important;
         font-family: 'Cormorant Garamond', serif !important;
+        font-size: 14px !important; /* Tamaño unificado */
         font-weight: 600 !important;
         text-transform: uppercase !important;
-        letter-spacing: 1px !important;
+        letter-spacing: 1.2px !important;
+        border-radius: 4px !important;
+        border: none !important;
+        display: block !important;
+        text-align: center !important;
+        text-decoration: none !important;
+        padding: 0 !important;
     }
 
+    /* Colores para VER y VOLVER (Streamlit Nativo) */
     .stButton>button {
-        height: 32px !important; width: 100% !important;
-        font-size: 12px !important; border-radius: 4px !important;
-        border: none !important; background-color: #e0e0e0 !important; color: #1a1a1a !important;
+        background-color: #e0e0e0 !important; 
+        color: #1a1a1a !important;
+    }
+    .stButton>button p {
+        font-size: 14px !important;
+        font-family: 'Cormorant Garamond', serif !important;
+        margin: 0 !important;
     }
 
-    /* BOTONES ESPECIALES (WHATSAPP Y AVISO) */
-    .btn-whatsapp, .boton-aviso {
-        height: 32px !important; text-align: center; line-height: 32px !important;
-        border-radius: 4px; font-family: 'Cormorant Garamond', serif !important; 
-        font-size: 12px !important; font-weight: 600; text-transform: uppercase; 
-        letter-spacing: 1px; text-decoration: none; display: block; width: 100%;
+    /* Colores para WHATSAPP */
+    .btn-whatsapp { 
+        background-color: #25D366 !important; 
+        color: white !important; 
     }
 
-    .btn-whatsapp { background-color: #25D366 !important; color: white !important; }
-    .boton-aviso { background-color: #e0e0e0 !important; color: #1a1a1a !important; margin-top: 10px; }
+    /* Colores para VER AVISO */
+    .boton-aviso { 
+        background-color: #e0e0e0 !important; 
+        color: #1a1a1a !important; 
+        margin-top: 10px;
+    }
 
     .hero-container {
         width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
@@ -93,12 +110,12 @@ st.markdown("""
 
     .titulo-elegante {
         font-family: 'Cormorant Garamond', serif !important;
-        font-size: 22px !important; color: #1a1a1a; text-align: center;
-        text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
+        font-size: 24px !important; color: #1a1a1a; text-align: center;
+        text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px;
     }
     
     .texto-home { 
-        font-size: 16px !important; 
+        font-size: 17px !important; 
         font-family: 'Cormorant Garamond', serif !important; 
         color: #1a1a1a; margin: 0 !important; font-weight: 500;
     }
@@ -108,6 +125,7 @@ st.markdown("""
 if diccionario_hojas:
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
 
+    # --- VISTA: HOME ---
     if st.session_state.opcion_actual == "HOME":
         img_64 = get_base64("images/HOME.png")
         if img_64:
@@ -125,7 +143,7 @@ if diccionario_hojas:
                 
                 col1, col2, col3 = st.columns([1.8, 0.7, 1.2]) 
                 with col1: 
-                    st.markdown(f"<p class='texto-home' style='line-height:32px;'>{val_raw}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-home' style='line-height:38px;'>{val_raw}</p>", unsafe_allow_html=True)
                 with col2:
                     if st.button("VER", key=f"btn_{index}"):
                         nombre_final = hojas_reales.get(val_raw.upper(), val_raw)
@@ -134,9 +152,10 @@ if diccionario_hojas:
                         st.rerun()
                 with col3:
                     val_cont = str(row[2]).strip() if len(row) > 2 else "-"
-                    st.markdown(f"<p class='texto-home' style='text-align:right; line-height:32px;'>{val_cont}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p class='texto-home' style='text-align:right; line-height:38px;'>{val_cont}</p>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
+    # --- VISTA: FICHA TÉCNICA ---
     else:
         opcion = st.session_state.opcion_actual
         nombre_hoja = hojas_reales.get(opcion.upper(), opcion)
@@ -173,8 +192,9 @@ if diccionario_hojas:
         
         with col_ws:
             num_ws = "5491168807566"
-            url_base = "https://inversiones-inmobiliarias.streamlit.app/" 
+            url_base = "https://tu-app-revaloriza.streamlit.app" 
             unidad_url = urllib.parse.quote(nombre_hoja)
             link_ficha = f"{url_base}?unidad={unidad_url}"
             msg_url = urllib.parse.quote(f"Hola! Me interesa esta propiedad: {link_ficha}")
+            
             st.markdown(f'<a href="https://wa.me/{num_ws}?text={msg_url}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
