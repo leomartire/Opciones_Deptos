@@ -19,14 +19,12 @@ st.set_page_config(
 )
 
 # --- 3. LÓGICA DE NAVEGACIÓN (Deep Linking) ---
-params = st.query_params
-
-if "unidad" in params:
-    st.session_state.opcion_actual = params["unidad"]
+if "unidad" in st.query_params:
+    st.session_state.opcion_actual = st.query_params["unidad"]
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 4. ESTILOS CSS ---
+# --- 4. ESTILOS CSS (Identidad Visual) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
@@ -39,6 +37,7 @@ st.markdown("""
     
     thead, tbody th { display: none !important; }
 
+    /* BOTONES INSTITUCIONALES */
     .stButton>button {
         height: 32px !important; width: 100% !important;
         font-size: 10px !important; border-radius: 4px !important;
@@ -47,6 +46,7 @@ st.markdown("""
         border: none !important; background-color: #e0e0e0 !important; color: #1a1a1a !important;
     }
 
+    /* BOTÓN WHATSAPP */
     .btn-whatsapp {
         height: 32px !important; background-color: #25D366 !important;
         color: white !important; text-align: center; line-height: 32px !important;
@@ -92,6 +92,7 @@ def cargar_datos():
 diccionario_hojas = cargar_datos()
 
 if diccionario_hojas:
+    # Mapeo de nombres para evitar errores de mayúsculas/minúsculas
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
 
     # --- VISTA: HOME ---
@@ -107,6 +108,7 @@ if diccionario_hojas:
             st.markdown("<hr style='margin: 0 0 8px 0; opacity: 0.3;'>", unsafe_allow_html=True)
             for index, row in df_home.iterrows():
                 val_raw = str(row[0]).strip() if pd.notnull(row[0]) else ""
+                # Filtramos cabeceras o filas vacías
                 if not val_raw or val_raw.upper() in ["UNIDAD", "HOME"] or val_raw.isdigit():
                     continue
                 
@@ -115,7 +117,11 @@ if diccionario_hojas:
                     st.markdown(f"<p class='texto-base' style='line-height:32px;'>{val_raw}</p>", unsafe_allow_html=True)
                 with col2:
                     if st.button("VER", key=f"btn_{index}"):
-                        st.session_state.opcion_actual = hojas_reales.get(val_raw.upper(), "HOME")
+                        # Buscamos el nombre exacto de la hoja
+                        nombre_final = hojas_reales.get(val_raw.upper(), val_raw)
+                        st.session_state.opcion_actual = nombre_final
+                        # Actualizamos la URL para que el navegador refleje la unidad
+                        st.query_params["unidad"] = nombre_final
                         st.rerun()
                 with col3:
                     val_cont = str(row[2]).strip() if len(row) > 2 else "-"
@@ -135,6 +141,7 @@ if diccionario_hojas:
         if opcion in diccionario_hojas:
             df_ficha = diccionario_hojas[opcion].copy()
             url_aviso = None
+            # Extraer link externo si existe
             for col in df_ficha.columns:
                 mask = df_ficha[col].str.contains("http|www", na=False)
                 if mask.any():
@@ -148,6 +155,8 @@ if diccionario_hojas:
                 st.markdown(f'<a href="{url_aviso}" target="_blank" class="boton-aviso">VER AVISO PUBLICADO</a>', unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
+        
+        # --- BOTONES DE ACCIÓN ---
         col_volver, col_ws = st.columns(2)
         
         with col_volver:
@@ -158,9 +167,12 @@ if diccionario_hojas:
         
         with col_ws:
             num_ws = "5491168807566"
-            # USA LA URL DE TU APP SIN LA BARRA FINAL
-            url_base = "https://inversiones-inmobiliarias.streamlit.app" 
+            # CAMBIAR POR TU URL REAL
+            url_base = "https://inversiones-inmobiliarias.streamlit.app/" 
+            
+            # Codificamos el link de la ficha para que sea dinámico
             link_ficha = f"{url_base}?unidad={opcion.replace(' ', '%20')}"
-            txt_ws = f"Hola! Me interesa esta propiedad del proyecto 2026: {link_ficha}"
+            txt_ws = f"Hola! Me interesa obtener más información sobre esta propiedad: {link_ficha}"
             link_ws = f"https://wa.me/{num_ws}?text={txt_ws.replace(' ', '%20')}"
+            
             st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
