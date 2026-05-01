@@ -1,5 +1,5 @@
 import streamlit as st
-import pandas as pd  # <--- Corregido: importación correcta
+import pandas as pd
 import os
 import base64
 
@@ -11,19 +11,25 @@ def get_base64(bin_file):
         return base64.b64encode(data).decode()
     return None
 
-# 2. CONFIGURACIÓN
+# 2. CONFIGURACIÓN E INICIALIZACIÓN DE ESTADO
 st.set_page_config(
     page_title="Zeylicovich & Arzumanián | Inversiones", 
     layout="wide", 
     page_icon="🏢"
 )
 
-# 3. CSS UNIFICADO (Tipografía y Colores Sincronizados)
+# --- LÓGICA DE DEEP LINKING (Para que el link de WhatsApp funcione) ---
+query_params = st.query_params
+if "unidad" in query_params and "opcion_actual" not in st.session_state:
+    st.session_state.opcion_actual = query_params["unidad"]
+elif "opcion_actual" not in st.session_state:
+    st.session_state.opcion_actual = "HOME"
+
+# 3. CSS UNIFICADO
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap');
     
-    /* ADVERTENCIA MÓVIL */
     .orientacion-mensaje {
         display: none; background-color: #1a1a1a; color: #d4af37;
         text-align: center; padding: 15px; font-family: sans-serif;
@@ -34,7 +40,6 @@ st.markdown("""
         .orientacion-mensaje { display: block !important; }
     }
 
-    /* ESTRUCTURA */
     .stApp { margin-top: -70px; } 
     .block-container {
         padding-top: 2rem !important; max-width: 450px !important; 
@@ -43,70 +48,38 @@ st.markdown("""
     
     thead, tbody th { display: none !important; }
 
-    /* --- ESTILO UNIFICADO PARA LOS 4 BOTONES (32px de alto) --- */
-    
-    /* Botones Streamlit (VER y VOLVER) */
+    /* BOTONES UNIFICADOS */
     .stButton>button {
-        height: 32px !important; 
-        width: 100% !important;
-        font-size: 10px !important; 
-        border-radius: 4px !important;
-        font-family: sans-serif !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
-        border: none !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 !important;
-        background-color: #e0e0e0 !important; /* Gris unificado */
-        color: #1a1a1a !important;
+        height: 32px !important; width: 100% !important;
+        font-size: 10px !important; border-radius: 4px !important;
+        font-family: sans-serif !important; font-weight: 600 !important;
+        text-transform: uppercase !important; letter-spacing: 1px !important;
+        border: none !important; display: flex; align-items: center;
+        justify-content: center; padding: 0 !important;
+        background-color: #e0e0e0 !important; color: #1a1a1a !important;
     }
 
-    /* Botón WhatsApp (HTML) */
     .btn-whatsapp {
-        height: 32px !important;
-        background-color: #25D366 !important;
-        color: white !important;
-        text-align: center;
-        line-height: 32px !important;
-        border-radius: 4px;
-        font-family: sans-serif;
-        font-size: 10px !important;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        text-decoration: none;
-        display: block;
-        width: 100%;
+        height: 32px !important; background-color: #25D366 !important;
+        color: white !important; text-align: center; line-height: 32px !important;
+        border-radius: 4px; font-family: sans-serif; font-size: 10px !important;
+        font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+        text-decoration: none; display: block; width: 100%;
     }
 
-    /* Botón VER AVISO (HTML) */
     .boton-aviso {
-        display: block; 
-        width: 100%; 
-        height: 32px !important;
-        line-height: 32px !important;
-        text-align: center;
-        background-color: #e0e0e0 !important; /* Gris unificado */
-        color: #1a1a1a !important;
-        border-radius: 4px;
-        font-size: 10px !important;
-        text-decoration: none; 
-        font-family: sans-serif;
-        margin-top: 10px; 
-        font-weight: 600; 
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        display: block; width: 100%; height: 32px !important;
+        line-height: 32px !important; text-align: center;
+        background-color: #e0e0e0 !important; color: #1a1a1a !important;
+        border-radius: 4px; font-size: 10px !important;
+        text-decoration: none; font-family: sans-serif; margin-top: 10px;
+        font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
     }
 
-    /* IMÁGENES Y TÍTULOS */
     .hero-container-home, .hero-container-ficha {
         width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
         overflow: hidden; margin-bottom: 1rem; display: flex; justify-content: center;
     }
-    .hero-container-home { height: auto; min-height: 100px; }
     .hero-container-home img { width: 100%; height: auto; object-fit: contain; }
     .hero-container-ficha { height: auto; max-height: 280px; }
     .hero-container-ficha img { max-width: 100%; max-height: 280px; object-fit: contain; }
@@ -119,9 +92,7 @@ st.markdown("""
     .texto-base { font-size: 11px !important; font-family: sans-serif !important; color: #444; margin: 0 !important; }
     </style>
     
-    <div class="orientacion-mensaje">
-        🔄 POR FAVOR, GIRE SU PANTALLA (MODO APAISADO)
-    </div>
+    <div class="orientacion-mensaje">🔄 POR FAVOR, GIRE SU PANTALLA</div>
     """, unsafe_allow_html=True)
 
 # 4. CARGA DE DATOS
@@ -136,11 +107,8 @@ diccionario_hojas = cargar_datos()
 
 if diccionario_hojas:
     hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
-    if "opcion_actual" not in st.session_state:
-        st.session_state.opcion_actual = "HOME"
 
     if st.session_state.opcion_actual == "HOME":
-        # --- PANEL PRINCIPAL ---
         img_64 = get_base64("images/HOME.png")
         if img_64:
             st.markdown(f'<div class="hero-container-home"><img src="data:image/png;base64,{img_64}"></div>', unsafe_allow_html=True)
@@ -169,7 +137,6 @@ if diccionario_hojas:
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
 
     else:
-        # --- FICHA TÉCNICA ---
         opcion = st.session_state.opcion_actual
         img_ficha = get_base64(f"images/{opcion}.png")
         if img_ficha:
@@ -191,15 +158,20 @@ if diccionario_hojas:
 
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # FILA DE BOTONES UNIFICADOS
         col_volver, col_ws = st.columns(2)
         with col_volver:
             if st.button("← VOLVER", key="btn_back"):
                 st.session_state.opcion_actual = "HOME"
+                # Limpiamos parámetros de URL al volver
+                st.query_params.clear()
                 st.rerun()
         
         with col_ws:
             num_ws = "5491168807566"
-            txt_ws = f"Hola! Me interesa obtener más información sobre: {opcion}"
+            # IMPORTANTE: Reemplaza esta URL con la real de tu app cuando la publiques
+            url_app = "https://tu-proyecto-revaloriza.streamlit.app/"
+            link_directo = f"{url_app}?unidad={opcion.replace(' ', '%20')}"
+            
+            txt_ws = f"Hola! Me interesa obtener más información sobre esta propiedad: {link_directo}"
             link_ws = f"https://wa.me/{num_ws}?text={txt_ws.replace(' ', '%20')}"
             st.markdown(f'<a href="{link_ws}" target="_blank" class="btn-whatsapp">WhatsApp</a>', unsafe_allow_html=True)
