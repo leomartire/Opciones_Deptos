@@ -26,7 +26,7 @@ st.set_page_config(
 # Meta Tags para WhatsApp
 st.markdown(f"""
     <head>
-    <meta property="og:title" content="Zeylicovich & Arzumanián | Inversines Mayo 2026">
+    <meta property="og:title" content="Zeylicovich & Arzumanián | Inversiones">
     <meta property="og:description" content="Propiedades exclusivas y proyectos de Flipping en CABA.">
     <meta property="og:image" content="{URL_IMAGEN_PREVIEW}">
     <meta property="og:url" content="{URL_BASE_APP}">
