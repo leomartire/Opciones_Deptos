@@ -50,41 +50,16 @@ if "unidad" in st.query_params:
 elif "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 6. ESTILOS CSS + CARTEL DE ROTACIÓN + OCULTAR MENÚS ---
+# --- 6. ESTILOS CSS GENERALES ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
     
-    /* 1. OCULTAR ELEMENTOS DE STREAMLIT (Deploy, Menú, Footer) */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stAppDeployButton { display: none !important; }
     
-    /* 2. CARTEL DE ROTACIÓN */
-    #landscape-notice {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-color: #f4f1ea;
-        color: #1a1a1a;
-        z-index: 99999;
-        text-align: center;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-family: 'Cormorant Garamond', serif;
-        padding: 20px;
-    }
-
-    @media only screen and (max-width: 768px) and (orientation: portrait) {
-        #landscape-notice { display: flex; }
-    }
-
-    .notice-icon { font-size: 50px; color: #b8860b; margin-bottom: 15px; }
-    .notice-text { font-size: 20px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; line-height: 1.2; }
-
-    /* 3. ESTILOS GENERALES DE LA APP */
     .stApp { margin-top: -70px; } 
     .block-container {
         padding-top: 2rem !important; max-width: 450px !important; 
@@ -94,14 +69,6 @@ st.markdown("""
     html, body, [class*="css"], .stMarkdown, p, div {
         font-family: 'Cormorant Garamond', serif !important;
     }
-
-    .stTable td {
-        font-family: 'Cormorant Garamond', serif !important;
-        font-size: 15px !important;
-        color: #444 !important;
-    }
-
-    thead, tbody th { display: none !important; }
 
     .stButton>button, .btn-whatsapp, .boton-aviso {
         height: 38px !important; 
@@ -135,15 +102,17 @@ st.markdown("""
         text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px;
     }
     
-    .texto-home { 
-        font-size: 17px !important; color: #1a1a1a; margin: 0 !important; font-weight: 500;
+    .subtitulo-h2 {
+        font-size: 19px !important; color: #b8860b; text-transform: uppercase;
+        letter-spacing: 1.2px; margin-top: 25px; margin-bottom: 5px;
+        border-bottom: 1px solid rgba(184, 134, 11, 0.3);
     }
-    </style>
+    .descripcion-h2 {
+        font-size: 15px; color: #555; font-style: italic; margin-bottom: 15px; line-height: 1.2;
+    }
 
-    <div id="landscape-notice">
-        <div class="notice-icon">🔄</div>
-        <div class="notice-text">Zeylicovich & Arzumanián<br><br>Por favor, gire su dispositivo para una mejor experiencia.</div>
-    </div>
+    .texto-home { font-size: 17px !important; color: #1a1a1a; margin: 0 !important; font-weight: 500; }
+    </style>
     """, unsafe_allow_html=True)
 
 if diccionario_hojas:
@@ -156,6 +125,18 @@ if diccionario_hojas:
             st.markdown(f'<div class="hero-container"><img src="data:image/png;base64,{img_64}"></div>', unsafe_allow_html=True)
         
         st.markdown("<h1 class='titulo-elegante'>Listado de opciones</h1>", unsafe_allow_html=True)
+
+        # 1) Pendientes de visita LF y LC
+        st.markdown("<h2 class='subtitulo-h2'>1) Pendientes de visita LF y LC</h2>", unsafe_allow_html=True)
+        st.markdown("<p class='descripcion-h2'>Unidades identificadas en el radar de inversión pendientes de validación técnica.</p>", unsafe_allow_html=True)
+
+        # 2) Pendiente de visita Revaloriza
+        st.markdown("<h2 class='subtitulo-h2'>2) Pendiente de visita Revaloriza</h2>", unsafe_allow_html=True)
+        st.markdown("<p class='descripcion-h2'>Activos seleccionados bajo criterios de seguridad y plusvalía en proceso de auditoría física.</p>", unsafe_allow_html=True)
+
+        # 3) Visitados continúan como opción de inversión
+        st.markdown("<h2 class='subtitulo-h2'>3) Visitados continúan como opción de inversión</h2>", unsafe_allow_html=True)
+        st.markdown("<p class='descripcion-h2'>Propiedades con inspección técnica superada y métricas de ROI confirmadas.</p>", unsafe_allow_html=True)
 
         df_home = diccionario_hojas.get("HOME")
         if df_home is not None:
@@ -178,46 +159,3 @@ if diccionario_hojas:
                     val_cont = str(row[2]).strip() if len(row) > 2 else "-"
                     st.markdown(f"<p class='texto-home' style='text-align:right; line-height:38px;'>{val_cont}</p>", unsafe_allow_html=True)
                 st.markdown("<hr style='margin:4px 0; opacity:0.1;'>", unsafe_allow_html=True)
-
-    # --- VISTA: FICHA TÉCNICA ---
-    else:
-        opcion = st.session_state.opcion_actual
-        nombre_hoja = hojas_reales.get(opcion.upper(), opcion)
-        
-        img_ficha = get_base64(f"images/{nombre_hoja}.png")
-        if img_ficha:
-            st.markdown(f'<div class="hero-container"><img src="data:image/png;base64,{img_ficha}"></div>', unsafe_allow_html=True)
-        
-        st.markdown(f"<h1 class='titulo-elegante'>{nombre_hoja}</h1>", unsafe_allow_html=True)
-        
-        if nombre_hoja in diccionario_hojas:
-            df_ficha = diccionario_hojas[nombre_hoja].copy()
-            url_aviso = None
-            for col in df_ficha.columns:
-                mask = df_ficha[col].str.contains("http|www", na=False)
-                if mask.any():
-                    url_aviso = df_ficha.loc[mask, col].values[0]
-                    df_ficha.loc[mask, col] = pd.NA 
-                    break
-            
-            st.table(df_ficha.iloc[1:].dropna(how='all'))
-            
-            if url_aviso:
-                st.markdown(f'<a href="{url_aviso}" target="_blank" class="boton-aviso">VER AVISO PUBLICADO</a>', unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        col_volver, col_ws = st.columns(2)
-        
-        with col_volver:
-            if st.button("← VOLVER", key="btn_back"):
-                st.session_state.opcion_actual = "HOME"
-                st.query_params.clear()
-                st.rerun()
-        
-        with col_ws:
-            # LÓGICA COMPARTIR GENÉRICA (ABRE SELECTOR DE CONTACTOS)
-            unidad_url = urllib.parse.quote(nombre_hoja)
-            link_ficha = f"{URL_BASE_APP}?unidad={unidad_url}&r=2026"
-            msg_url = urllib.parse.quote(f"Mirá esta propiedad de Zeylicovich & Arzumanián: {link_ficha}")
-            
-            st.markdown(f'<a href="https://api.whatsapp.com/send?text={msg_url}" target="_blank" class="btn-whatsapp">COMPARTIR</a>', unsafe_allow_html=True)
