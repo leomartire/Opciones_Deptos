@@ -2,13 +2,10 @@ import streamlit as st
 import pandas as pd
 import os
 import base64
-import urllib.parse
 
-# 1. CONFIGURACIÓN DE IDENTIDAD Y PREVENTA 2026
-URL_BASE_APP = "https://inversiones-inmobiliarias.streamlit.app/"
-URL_IMAGEN_PREVIEW = "https://raw.githubusercontent.com/leomartire/Opciones_Deptos/main/images/HOME.png?v=2"
+# --- CONFIGURACIÓN Y ESTILOS (Se mantienen igual) ---
+st.set_page_config(page_title="Zeylicovich & Arzumanián | Inversiones", layout="wide")
 
-# 2. FUNCIÓN PARA PROCESAR IMÁGENES LOCALES
 def get_base64(bin_file):
     if os.path.exists(bin_file):
         with open(bin_file, 'rb') as f:
@@ -16,26 +13,18 @@ def get_base64(bin_file):
         return base64.b64encode(data).decode()
     return None
 
-# 3. CONFIGURACIÓN DE PÁGINA
-st.set_page_config(
-    page_title="Zeylicovich & Arzumanián | Inversiones", 
-    layout="wide", 
-    page_icon="🏢"
-)
-
-# Meta Tags para WhatsApp
-st.markdown(f"""
-    <head>
-    <meta property="og:title" content="Zeylicovich & Arzumanián | Inversiones">
-    <meta property="og:description" content="Propiedades exclusivas y proyectos de Flipping en CABA.">
-    <meta property="og:image" content="{URL_IMAGEN_PREVIEW}">
-    <meta property="og:url" content="{URL_BASE_APP}">
-    <meta property="og:type" content="website">
-    </head>
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
+    html, body, [class*="css"], .stMarkdown, p, div { font-family: 'Cormorant Garamond', serif !important; }
+    .titulo-elegante { font-size: 26px; color: #1a1a1a; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+    .subtitulo-h2 { font-size: 20px; color: #b8860b; text-transform: uppercase; margin-top: 35px; border-bottom: 1px solid rgba(184,134,11,0.3); }
+    .texto-home { font-size: 17px; color: #1a1a1a; font-weight: 500; }
+    </style>
     """, unsafe_allow_html=True)
 
-# --- 4. CARGA DE DATOS ---
-@st.cache_data(ttl=60)
+# --- CARGA DE DATOS ---
+@st.cache_data
 def cargar_datos():
     archivo = "Opciones_Deptos_LM.xlsx"
     if os.path.exists(archivo):
@@ -44,83 +33,36 @@ def cargar_datos():
 
 diccionario_hojas = cargar_datos()
 
-# --- 5. LÓGICA DE NAVEGACIÓN ---
-if "unidad" in st.query_params:
-    st.session_state.opcion_actual = st.query_params["unidad"]
-elif "opcion_actual" not in st.session_state:
+# --- NAVEGACIÓN ---
+if "opcion_actual" not in st.session_state:
     st.session_state.opcion_actual = "HOME"
 
-# --- 6. ESTILOS CSS + CARTEL DE ROTACIÓN + OCULTAR MENÚS ---
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap');
+if diccionario_hojas:
+    hojas_reales = {str(k).strip().upper(): k for k in diccionario_hojas.keys()}
     
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stAppDeployButton { display: none !important; }
-    
-    #landscape-notice {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-color: #f4f1ea;
-        color: #1a1a1a;
-        z-index: 99999;
-        text-align: center;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-family: 'Cormorant Garamond', serif;
-        padding: 20px;
-    }
+    if st.session_state.opcion_actual == "HOME":
+        # Hero Image
+        img_64 = get_base64("images/HOME.png")
+        if img_64:
+            st.markdown(f'<div style="text-align:center;"><img src="data:image/png;base64,{img_64}" style="width:100%; max-height:250px; object-fit:cover;"></div>', unsafe_allow_html=True)
+        
+        st.markdown("<h1 class='titulo-elegante'>Portafolio de Activos Estratégicos 2026</h1>", unsafe_allow_html=True)
 
-    @media only screen and (max-width: 768px) and (orientation: portrait) {
-        #landscape-notice { display: flex; }
-    }
+        df_home = diccionario_hojas.get("HOME")
+        if df_home is not None:
+            # Mapeo de jerarquía según tu indicación (Ajustado a índice 0 de Python: fila 4 -> index 3)
+            # h2_indices: 3 (Fila 4), 10 (Fila 11), 14 (Fila 15)
+            # pertenencias: {3: [5,6,7,8], 10: [12], 14: [16]} -> (Índices de fila Excel - 1)
+            
+            secciones = [
+                {"titulo_idx": 3, "items_idxs": [5, 6, 7, 8]},
+                {"titulo_idx": 10, "items_idxs": [12]},
+                {"titulo_idx": 14, "items_idxs": [16]}
+            ]
 
-    .notice-icon { font-size: 50px; color: #b8860b; margin-bottom: 15px; }
-    .notice-text { font-size: 20px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; line-height: 1.2; }
-
-    .stApp { margin-top: -70px; } 
-    .block-container {
-        padding-top: 2rem !important; max-width: 450px !important; 
-        margin: 0 auto !important; padding-left: 10px !important; padding-right: 10px !important;
-    }
-    
-    html, body, [class*="css"], .stMarkdown, p, div {
-        font-family: 'Cormorant Garamond', serif !important;
-    }
-
-    .stTable td {
-        font-family: 'Cormorant Garamond', serif !important;
-        font-size: 15px !important;
-        color: #444 !important;
-    }
-
-    thead, tbody th { display: none !important; }
-
-    .stButton>button, .btn-whatsapp, .boton-aviso {
-        height: 38px !important; 
-        line-height: 38px !important;
-        width: 100% !important;
-        font-family: 'Cormorant Garamond', serif !important;
-        font-size: 14px !important; 
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1.2px !important;
-        border-radius: 4px !important;
-        border: none !important;
-        display: block !important;
-        text-align: center !important;
-        text-decoration: none !important;
-        padding: 0 !important;
-    }
-
-    .stButton>button { background-color: #e0e0e0 !important; color: #1a1a1a !important; }
-    .btn-whatsapp { background-color: #25D366 !important; color: white !important; }
-    .boton-aviso { background-color: #e0e0e0 !important; color: #1a1a1a !important; margin-top: 10px; }
-
-    .hero-container {
-        width: 100%; border-radius: 0 0 10px 10px; background-color: #f4f1ea;
-        overflow: hidden; margin-bottom: 1rem; display: flex; justify
+            for seccion in secciones:
+                # Renderizar el H2 (Fila de título)
+                idx_h2 = seccion["titulo_idx"]
+                if idx_h2 < len(df_home):
+                    texto_h2 = str(df_home.iloc[idx_h2, 0]).strip()
+                    st.markdown(f"<h2 class='sub
