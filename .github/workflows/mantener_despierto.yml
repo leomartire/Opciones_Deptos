@@ -1,4 +1,4 @@
-yamlname: Mantener App Despierta
+name: Mantener App Despierta
 on:
   schedule:
     - cron: '0 */10 * * *' # Se ejecuta automáticamente cada 10 horas
