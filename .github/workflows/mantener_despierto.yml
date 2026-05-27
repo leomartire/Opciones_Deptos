@@ -1,1 +1,15 @@
-
+yamlname: Mantener App Despierta
+on:
+  schedule:
+    - cron: '0 */10 * * *' # Se ejecuta automáticamente cada 10 horas
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Commit vacio para reactivar Streamlit
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit --allow-empty -m "Reactivando temporizador de Streamlit"
+        git push
